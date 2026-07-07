@@ -20,6 +20,13 @@ a minimal `description` header. Existing files are left untouched unless `--forc
 hand-crafted commands often carry extra frontmatter (`allowed-tools`, `argument-hint`, etc.) that a
 plain sync would otherwise clobber.
 
+The command bodies are also expected to diverge intentionally: `.github/prompts/*.prompt.md` uses
+`` !`command` `` to inject shell output for Copilot, but in Claude Code that syntax runs as a
+harness-level preprocessing step — a non-zero exit hard-aborts the whole command before the model
+ever sees the output. `.claude/commands/*.md` bodies instead tell Claude to run the command via the
+Bash tool as plain prose, so a failure surfaces as normal tool output the model can explain or react
+to instead of a silent abort. Keep this divergence when hand-editing or re-syncing commands.
+
 ## Architecture
 
 ```

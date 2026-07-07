@@ -6,4 +6,4 @@ slash_command: /setup
 allowed-tools: Bash(./setup.sh)
 ---
 
-!`./setup.sh`
+Run `./setup.sh` using the Bash tool, then report the output to the user.

@@ -6,9 +6,7 @@ slash_command: /test
 allowed-tools: Bash(uv run --no-sync *)
 ---
 
-Run all tests:
-
-!`uv run --no-sync invoke test`
+Run all tests: run `uv run --no-sync invoke test` using the Bash tool.
 
 If all tests pass, report success and stop.
 

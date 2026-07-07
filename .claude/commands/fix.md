@@ -6,4 +6,4 @@ slash_command: /fix
 allowed-tools: Bash(uv run --no-sync *)
 ---
 
-!`uv run --no-sync invoke fix`
+Run `uv run --no-sync invoke fix` using the Bash tool, then report the output to the user.
