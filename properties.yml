@@ -1,0 +1,8 @@
+---
+# repo_setup_python Properties
+# Central configuration for all scripts and automation
+# Copy this file into any project that uses this repo skeleton
+
+repo:
+  local: "/Users/levon/Development/levonbecker/repo_setup_python"
+  remote: "github.com/LevonBecker/repo_setup_python"

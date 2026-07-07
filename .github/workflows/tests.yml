@@ -1,0 +1,83 @@
+---
+name: Tests
+
+on:
+  workflow_call:
+
+jobs:
+  ruff_lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install Dependencies
+        run: uv sync
+
+      - name: Ruff Lint
+        run: uv run invoke tests.rufflint
+
+  pylint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install Dependencies
+        run: uv sync
+
+      - name: Pylint
+        run: uv run invoke tests.pylint
+
+  yaml_lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install Dependencies
+        run: uv sync
+
+      - name: Yaml Lint
+        run: uv run invoke tests.yamllint
+
+  # https://github.com/rhysd/actionlint
+  action_lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install Dependencies
+        run: uv sync
+
+      - name: Action Lint
+        run: uv run invoke tests.actionlint
