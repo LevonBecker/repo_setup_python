@@ -21,13 +21,14 @@ agent: agent
 
 ## Prompt Design Guidelines
 - One focused task per prompt — do not combine unrelated workflows
-- Reference invoke tasks by their full namespaced name: `uv run invoke tests.rufflint`
+- Reference invoke tasks by their full namespaced name: `uv run --no-sync invoke tests.rufflint`
+- Always include `--no-sync` in any `uv run` command a prompt executes — it prevents `uv` from silently upgrading a dependency mid-task
 - Reference modules by full path: `modules.repo.pull`
 - Keep prompts concise — they share context window with instructions
 
 ## Interacting with This Project
-- To run linting: `uv run invoke test`
-- To auto-fix: `uv run invoke fix`
+- To run linting: `uv run --no-sync invoke test`
+- To auto-fix: `uv run --no-sync invoke fix`
 - To add a new invoke task: follow `tasks.instructions.md` conventions
 - To add a new module: follow `modules.instructions.md` conventions
 

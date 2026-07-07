@@ -7,20 +7,23 @@ applyTo: "tasks/tests.py"
 ## Test Tooling
 | Tool | Covers | Run With |
 |------|--------|----------|
-| Ruff | Python style & lint | `uv run invoke tests.rufflint` |
-| Pylint | Deeper Python static analysis (must score 10.00/10) | `uv run invoke tests.pylint` |
-| yamllint | YAML files | `uv run invoke tests.yamllint` |
-| actionlint | GitHub Actions workflow files | `uv run invoke tests.actionlint` |
+| Ruff | Python style & lint | `uv run --no-sync invoke tests.rufflint` |
+| Pylint | Deeper Python static analysis (must score 10.00/10) | `uv run --no-sync invoke tests.pylint` |
+| yamllint | YAML files | `uv run --no-sync invoke tests.yamllint` |
+| actionlint | GitHub Actions workflow files | `uv run --no-sync invoke tests.actionlint` |
 
 ## Running Tests
 ```sh
-uv run invoke test          # All: ruff + pylint + yamllint + actionlint
-uv run invoke tests.rufflint
-uv run invoke tests.pylint
-uv run invoke tests.yamllint
-uv run invoke tests.actionlint
-uv run invoke fix           # Auto-correct: ruff check --fix + ruff format
+uv run --no-sync invoke test          # All: ruff + pylint + yamllint + actionlint
+uv run --no-sync invoke tests.rufflint
+uv run --no-sync invoke tests.pylint
+uv run --no-sync invoke tests.yamllint
+uv run --no-sync invoke tests.actionlint
+uv run --no-sync invoke fix           # Auto-correct: ruff check --fix + ruff format
 ```
+
+Always include `--no-sync` — a bare `uv run` silently re-resolves the environment and can pull in a
+newer dependency version before the command runs, without the change going through review.
 
 ## File Structure
 ```

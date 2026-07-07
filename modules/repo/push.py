@@ -12,11 +12,11 @@ from ..common.utils import error, success, warning
 def _run_tests(repo_path: Path) -> None:
     """Run automated fixes, then tests, before pushing."""
     click.echo("🔧 Running automated code fixes...")
-    subprocess.run(["uv", "run", "invoke", "fix"], cwd=repo_path, check=False)
+    subprocess.run(["uv", "run", "--no-sync", "invoke", "fix"], cwd=repo_path, check=False)
     click.echo()
 
     click.echo("🧪 Running tests...")
-    result = subprocess.run(["uv", "run", "invoke", "test"], cwd=repo_path, check=False)
+    result = subprocess.run(["uv", "run", "--no-sync", "invoke", "test"], cwd=repo_path, check=False)
     if result.returncode != 0:
         error(
             "Tests failed! Fix all offenses before pushing.\n"

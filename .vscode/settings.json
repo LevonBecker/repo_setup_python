@@ -1,6 +1,7 @@
 {
     "chat.tools.terminal.autoApprove": {
-        "uv run invoke": true
+        "uv run": true,
+        "uv run --no-sync": true,
     },
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",

@@ -1,8 +1,9 @@
-"""Git workflow tasks (pull, push, log, squash, rebase)."""
+"""Git workflow tasks (pull, push, log, squash, rebase, pr)."""
 
 from invoke import task
 
 from modules.repo import log as log_module
+from modules.repo import pr as pr_module
 from modules.repo import pull as pull_module
 from modules.repo import push as push_module
 from modules.repo import rebase as rebase_module
@@ -37,3 +38,21 @@ def squash(_context):
 def rebase(_context):
     """Rebase onto remote default branch (optionally squash first)"""
     rebase_module.main()
+
+
+@task
+def pr_diff(_context):
+    """Show current branch's commit log/diff vs. its detected base branch"""
+    pr_module.main()
+
+
+@task
+def pr_notes_save(_context, content=None):
+    """Save PR notes to tmp/pull_requests/"""
+    pr_module.save_notes(content=content)
+
+
+@task
+def pr_create(_context, title=None, content=None):
+    """Open a GitHub PR for the current branch (gh pr create)"""
+    pr_module.create_pr(title=title, content=content)
