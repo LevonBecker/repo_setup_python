@@ -8,9 +8,9 @@ applyTo: "**/*.py"
 Target: `>=3.14` (defined in `pyproject.toml`, pinned in `.python-version`)
 
 ## Style & Linting
-- **Ruff** enforces fast style/lint checks — run `uv run invoke tests.rufflint` to check, `uv run invoke ruff.fix` to auto-correct
-- **Pylint** enforces deeper static analysis — run `uv run invoke tests.pylint` (must score 10.00/10 to pass `invoke test`)
-- Run `uv run invoke fix` to auto-correct everything Ruff can fix, then format
+- **Ruff** enforces fast style/lint checks — run `uv run --no-sync invoke tests.rufflint` to check, `uv run --no-sync invoke ruff.fix` to auto-correct
+- **Pylint** enforces deeper static analysis — run `uv run --no-sync invoke tests.pylint` (must score 10.00/10 to pass `invoke test`)
+- Run `uv run --no-sync invoke fix` to auto-correct everything Ruff can fix, then format
 - Config lives in `pyproject.toml` under `[tool.ruff]` and `[tool.pylint]`
 - Disable a rule inline only when necessary, with a comment explaining why:
   ```python

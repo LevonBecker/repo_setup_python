@@ -14,7 +14,7 @@ applyTo: "*.md"
 ## README Conventions
 - Lead with a short one-sentence project description
 - Include: Setup, Project Structure, Invoke Tasks, AI Prompts, and Modules sections
-- Show invoke commands in fenced `sh` code blocks (`uv run invoke ...`)
+- Show invoke commands in fenced `sh` code blocks (`uv run --no-sync invoke ...`)
 - Keep it concise — link out rather than duplicating content
 
 ## Inline Code Comments

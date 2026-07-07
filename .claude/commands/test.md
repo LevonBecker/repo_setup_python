@@ -1,13 +1,12 @@
 ---
-name: test
 description: Run all tests and linters. Use when you want to run ruff, pylint, yamllint, and actionlint.
-argument-hint: no arguments required
-agent: agent
+subtask: false
+agent: general
+slash_command: /test
+allowed-tools: Bash(uv run --no-sync *)
 ---
 
-Run all tests:
-
-!`uv run --no-sync invoke test`
+Run all tests: run `uv run --no-sync invoke test` using the Bash tool.
 
 If all tests pass, report success and stop.
 

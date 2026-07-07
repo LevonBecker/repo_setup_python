@@ -19,20 +19,24 @@ setup.sh               # Initial environment setup (uv venv + uv sync)
 properties.yml         # Project configuration (repo path, remote)
 modules/
   common/               # cli.py, properties.py, utils.py — shared helpers
-  repo/                 # pull.py, push.py, log.py, squash.py, rebase.py — git workflow modules
+  repo/                 # pull.py, push.py, log.py, squash.py, rebase.py, pr.py — git/PR workflow modules
+  claude/               # sync.py — syncs .claude/commands/ from .github/prompts/
 tasks/
-  __init__.py           # Wires the invoke Collection (repo, ruff, tests, fix, test)
-  repo.py               # repo.pull, repo.push, repo.log, repo.squash, repo.rebase
+  __init__.py           # Wires the invoke Collection (claude, repo, ruff, tests, fix, test)
+  claude.py             # claude.sync
+  repo.py               # repo.pull, repo.push, repo.log, repo.squash, repo.rebase, repo.pr_diff, repo.pr_notes_save, repo.pr_create
   ruff.py               # ruff.fix, ruff.format
   tests.py              # tests.actionlint, tests.pylint, tests.rufflint, tests.yamllint
   combos.py             # Top-level aliases: fix, test
 .github/
   instructions/         # Copilot instructions per concern
-  prompts/              # /push, /pull, /squash, /rebase, /fix, /test, /setup prompts
+  prompts/              # /push, /pull, /squash, /rebase, /fix, /test, /setup, /pr-notes, /pr, /punch-it-chewy — source of truth
   workflows/
     tests.yml            # Reusable CI: ruff + pylint + yamllint + actionlint
     feature_branches.yml # Runs tests.yml on pull_request
     protected_branches.yml # Runs tests.yml on push to main
+.claude/
+  commands/              # Claude Code slash commands, mirrored from .github/prompts/
 .vscode/
   extensions.json       # Recommended VS Code extensions
   settings.json         # Ruff formatter + Python interpreter settings
@@ -40,32 +44,40 @@ tasks/
 
 ## Invoke Tasks
 ```sh
-uv run invoke             # List all available tasks
-uv run invoke test        # Ruff + Pylint + yamllint + actionlint
-uv run invoke fix          # Ruff autocorrect + format
-uv run invoke repo.pull    # Pull from git remote (stash → pull --rebase → restore)
-uv run invoke repo.push    # Push to git remote (fix → test → commit → push)
-uv run invoke repo.log     # Save a session log to logs/
-uv run invoke repo.squash  # Anchored squash all commits to root + optional force push
-uv run invoke repo.rebase  # Rebase onto remote default branch (optionally squash first)
+uv run --no-sync invoke             # List all available tasks
+uv run --no-sync invoke test        # Ruff + Pylint + yamllint + actionlint
+uv run --no-sync invoke fix          # Ruff autocorrect + format
+uv run --no-sync invoke repo.pull    # Pull from git remote (stash → pull --rebase → restore)
+uv run --no-sync invoke repo.push    # Push to git remote (fix → test → commit → push)
+uv run --no-sync invoke repo.log     # Save a session log to logs/
+uv run --no-sync invoke repo.squash  # Anchored squash all commits to root + optional force push
+uv run --no-sync invoke repo.rebase  # Rebase onto remote default branch (optionally squash first)
+uv run --no-sync invoke repo.pr_diff       # Print current branch's commit log/diff vs. its base branch
+uv run --no-sync invoke repo.pr_notes_save # Save PR notes to tmp/pull_requests/ (--content=...)
+uv run --no-sync invoke repo.pr_create     # Open a GitHub PR via gh (--title=... --content=...)
+uv run --no-sync invoke claude.sync  # Sync .claude/commands/ from .github/prompts/ (additive; --force to overwrite)
 ```
 
 ## AI Prompts
 | Prompt | Command | Description |
 |--------|---------|-------------|
-| `/push` | `uv run invoke repo.push` | Fix, test, commit, and push to git |
-| `/pull` | `uv run invoke repo.pull` | Stash, pull latest, restore stash |
-| `/squash` | `uv run invoke repo.squash` | Anchored squash all commits to root |
-| `/rebase` | `uv run invoke repo.rebase` | Rebase onto remote default branch |
-| `/fix` | `uv run invoke fix` | Auto-fix Python linting issues |
-| `/test` | `uv run invoke test` | Run all tests and linters |
+| `/push` | `uv run --no-sync invoke repo.push` | Fix, test, commit, and push to git |
+| `/pull` | `uv run --no-sync invoke repo.pull` | Stash, pull latest, restore stash |
+| `/squash` | `uv run --no-sync invoke repo.squash` | Anchored squash all commits to root |
+| `/rebase` | `uv run --no-sync invoke repo.rebase` | Rebase onto remote default branch |
+| `/fix` | `uv run --no-sync invoke fix` | Auto-fix Python linting issues |
+| `/test` | `uv run --no-sync invoke test` | Run all tests and linters |
 | `/setup` | `./setup.sh` | Run initial project setup |
+| `/pr-notes` | `uv run --no-sync invoke repo.pr_diff` | Draft PR notes vs. base branch; saves to `tmp/pull_requests/` when run standalone |
+| `/pr` | `uv run --no-sync invoke repo.pr_create` | Draft PR notes and open a Pull Request via `gh` (does not push) |
+| `/punch-it-chewy` | — | Push, then draft notes and open a Pull Request |
 
 ## Modules
 | Module | Purpose |
 |--------|---------|
 | [`modules/common/`](modules/common/README.md) | CLI helpers, `properties.yml` config reader, output/utility helpers |
 | [`modules/repo/`](modules/repo/README.md) | Git workflow and session logging |
+| [`modules/claude/`](modules/claude/README.md) | Sync `.claude/commands/` from `.github/prompts/` source of truth |
 
 See [modules/README.md](modules/README.md) for full details.
 

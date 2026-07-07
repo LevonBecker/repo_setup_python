@@ -5,4 +5,4 @@ argument-hint: no arguments required
 agent: agent
 ---
 
-!`uv run invoke repo.squash`
+!`uv run --no-sync invoke repo.squash`

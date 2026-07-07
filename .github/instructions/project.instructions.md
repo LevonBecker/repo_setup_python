@@ -14,17 +14,21 @@ setup.sh          # Shell-based setup script (uv venv + uv sync)
 properties.yml    # Project configuration (repo path, remote)
 modules/
   common/         # cli.py, properties.py, utils.py — shared helpers
-  repo/           # pull.py, push.py, log.py, squash.py, rebase.py — git workflow modules
+  repo/           # pull.py, push.py, log.py, squash.py, rebase.py, pr.py — git/PR workflow modules
+  claude/         # sync.py — syncs .claude/commands/ from .github/prompts/
 tasks/
-  __init__.py     # Wires the invoke Collection (repo, ruff, tests, fix, test)
-  repo.py         # repo.pull, repo.push, repo.log, repo.squash, repo.rebase
+  __init__.py     # Wires the invoke Collection (claude, repo, ruff, tests, fix, test)
+  claude.py       # claude.sync
+  repo.py         # repo.pull, repo.push, repo.log, repo.squash, repo.rebase, repo.pr_diff, repo.pr_notes_save, repo.pr_create
   ruff.py         # ruff.fix, ruff.format
   tests.py        # tests.actionlint, tests.pylint, tests.rufflint, tests.yamllint
   combos.py       # Top-level aliases: fix, test
 .github/
   instructions/   # Copilot instruction files
-  prompts/        # Copilot prompt files (/push, /pull, /squash, /rebase, /fix, /test)
+  prompts/        # Copilot prompt files (/push, /pull, /squash, /rebase, /fix, /test, /pr-notes, /pr, /punch-it-chewy) — source of truth for slash commands
   workflows/      # tests.yml (reusable), feature_branches.yml, protected_branches.yml
+.claude/
+  commands/       # Claude Code slash commands, kept in sync with .github/prompts/ via `uv run --no-sync invoke claude.sync`
 .vscode/
   extensions.json # Recommended VS Code extensions
   settings.json   # Ruff formatter + Python interpreter settings
@@ -32,9 +36,11 @@ tasks/
 
 ## Key Conventions
 - `tasks/__init__.py` builds the root `Collection` — all task modules are wired explicitly (no auto-glob loading, unlike the Rake-based sibling project)
-- `modules/` are plain importable Python packages (`modules.common`, `modules.repo`) — imported directly by `tasks/*.py`
+- `modules/` are plain importable Python packages (`modules.common`, `modules.repo`, `modules.claude`) — imported directly by `tasks/*.py`
 - Every `modules/repo/*.py` file exposes a `main()` entry point, runnable standalone via `python -m modules.repo.<name>`
 - `invoke.yml` sets `auto_dash_names: false` so task names keep underscores (e.g. `repo.pull`, not `repo.pull-dash`)
+- `.github/prompts/` is the source of truth for slash commands; `.claude/commands/` mirrors it — run `invoke claude.sync` to add new commands, `--force` to overwrite hand-crafted ones
+- Always run `uv run --no-sync ...`, never bare `uv run ...` — without `--no-sync`, `uv run` re-resolves and may silently upgrade a dependency before the command runs. Any dependency change must go through an explicit `uv sync`/`uv lock` step that the user can review, not an implicit one buried inside a task run
 
 ## Dependencies (pyproject.toml)
 - `invoke` — task runner
@@ -44,14 +50,21 @@ tasks/
 - `actionlint-py` — GitHub Actions workflow linting (pip-installed, no Homebrew required)
 - `pyyaml` — reads `properties.yml`
 
+## External Tools
+- `gh` (GitHub CLI) — required for `repo.pr_create` / `/pr` / `/punch-it-chewy` (not a pip package; install via Homebrew)
+
 ## Running Tasks
 ```sh
-uv run invoke          # List all tasks (or: uv run invoke -l)
-uv run invoke test     # ruff + pylint + yamllint + actionlint
-uv run invoke fix      # Ruff autocorrect + format
-uv run invoke repo.pull   # Pull from git remote (stash → pull --rebase → restore)
-uv run invoke repo.push   # Push to git remote (fix → test → commit → push)
-uv run invoke repo.log    # Save a session log to logs/
-uv run invoke repo.squash # Anchored squash all commits to root + optional force push
-uv run invoke repo.rebase # Rebase onto remote default branch (optionally squash first)
+uv run --no-sync invoke          # List all tasks (or: uv run --no-sync invoke -l)
+uv run --no-sync invoke test     # ruff + pylint + yamllint + actionlint
+uv run --no-sync invoke fix      # Ruff autocorrect + format
+uv run --no-sync invoke repo.pull   # Pull from git remote (stash → pull --rebase → restore)
+uv run --no-sync invoke repo.push   # Push to git remote (fix → test → commit → push)
+uv run --no-sync invoke repo.log    # Save a session log to logs/
+uv run --no-sync invoke repo.squash # Anchored squash all commits to root + optional force push
+uv run --no-sync invoke repo.rebase # Rebase onto remote default branch (optionally squash first)
+uv run --no-sync invoke repo.pr_diff       # Print current branch's commit log/diff vs. its base branch
+uv run --no-sync invoke repo.pr_notes_save # Save PR notes to tmp/pull_requests/ (--content=...)
+uv run --no-sync invoke repo.pr_create     # Open a GitHub PR via gh (--title=... --content=...)
+uv run --no-sync invoke claude.sync # Sync .claude/commands/ from .github/prompts/ (additive; --force to overwrite)
 ```

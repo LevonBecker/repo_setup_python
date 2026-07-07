@@ -5,4 +5,4 @@ argument-hint: no arguments required
 agent: agent
 ---
 
-!`uv run invoke repo.push`
+!`uv run --no-sync invoke repo.push`

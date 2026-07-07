@@ -11,12 +11,15 @@ Modules provide reusable Python logic consumed by invoke tasks, prompts, and scr
 | Path | Purpose |
 |------|---------|
 | `modules/common/` | Helpers tightly coupled to invoke tasks (`cli`, `properties`, `utils`) |
-| `modules/repo/` | Git workflow logic (pull, push, log, squash, rebase) |
+| `modules/repo/` | Git/PR workflow logic (pull, push, log, squash, rebase, pr) |
+| `modules/claude/` | Syncs `.claude/commands/` from `.github/prompts/` source of truth |
 
 ## Module Conventions
 - One concern per file; filename matches the concern in snake_case
 - Use module-level functions, not classes, unless state genuinely requires it
-- `modules/repo/*.py` files each expose a single `main()` entry point
+- `modules/repo/*.py` files each expose a `main()` entry point; a file may expose additional public
+  functions (not prefixed `_`) if it backs more than one invoke task — e.g. `pr.py` exposes `main()`
+  (diff context), `save_notes()`, and `create_pr()` for its three `repo.pr_*` tasks
 - Private helpers are prefixed with `_` (e.g. `_stash_if_needed`)
 
 ## Method Patterns

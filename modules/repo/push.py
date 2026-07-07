@@ -12,11 +12,11 @@ from ..common.utils import error, success, warning
 def _run_tests(repo_path: Path) -> None:
     """Run automated fixes, then tests, before pushing."""
     click.echo("🔧 Running automated code fixes...")
-    subprocess.run(["uv", "run", "invoke", "fix"], cwd=repo_path, check=False)
+    subprocess.run(["uv", "run", "--no-sync", "invoke", "fix"], cwd=repo_path, check=False)
     click.echo()
 
     click.echo("🧪 Running tests...")
-    result = subprocess.run(["uv", "run", "invoke", "test"], cwd=repo_path, check=False)
+    result = subprocess.run(["uv", "run", "--no-sync", "invoke", "test"], cwd=repo_path, check=False)
     if result.returncode != 0:
         error(
             "Tests failed! Fix all offenses before pushing.\n"
@@ -54,9 +54,25 @@ def _current_branch(repo_path: Path) -> str:
     return result.stdout.strip()
 
 
+def _remote_branch_exists(repo_path: Path, branch: str) -> bool:
+    """Check whether origin already has a ref for this branch."""
+    result = subprocess.run(
+        ["git", "ls-remote", "--exit-code", "--heads", "origin", branch],
+        cwd=repo_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.returncode == 0
+
+
 def _pull_rebase(repo_path: Path, branch: str, stashed: bool) -> None:
     """Pull latest changes from remote, rebasing local work on top."""
     click.echo()
+    if not _remote_branch_exists(repo_path, branch):
+        click.echo(f"📥 Branch '{branch}' doesn't exist on origin yet — skipping pull.")
+        return
+
     click.echo("📥 Pulling latest changes from remote...")
     result = subprocess.run(
         ["git", "pull", "--rebase", "origin", branch], cwd=repo_path, capture_output=True, text=True, check=False
@@ -77,21 +93,25 @@ def _restore_stash(repo_path: Path) -> None:
     success("Stash restored")
 
 
-def _commit_and_push(repo_path: Path, timestamp: str) -> None:
+def _commit_and_push(repo_path: Path, branch: str, timestamp: str) -> None:
     """Commit any local changes with a timestamped message and push to remote."""
     click.echo()
     status = subprocess.run(["git", "status", "--porcelain"], cwd=repo_path, capture_output=True, text=True, check=True)
-    if not status.stdout.strip():
+    has_changes = bool(status.stdout.strip())
+
+    if has_changes:
+        click.echo("Found local changes. Committing...")
+        subprocess.run(["git", "add", "."], cwd=repo_path, check=True)
+        commit_message = f"Push repository: Automated commit {timestamp}"
+        subprocess.run(["git", "commit", "-m", commit_message], cwd=repo_path, check=True)
+    else:
         success("No local changes to commit")
+
+    if not has_changes and _remote_branch_exists(repo_path, branch):
         return
 
-    click.echo("Found local changes. Committing...")
-    subprocess.run(["git", "add", "."], cwd=repo_path, check=True)
-    commit_message = f"Push repository: Automated commit {timestamp}"
-    subprocess.run(["git", "commit", "-m", commit_message], cwd=repo_path, check=True)
-
     click.echo("Pushing to remote...")
-    result = subprocess.run(["git", "push"], cwd=repo_path, check=False)
+    result = subprocess.run(["git", "push", "--set-upstream", "origin", branch], cwd=repo_path, check=False)
     if result.returncode == 0:
         success("Push completed")
     else:
@@ -117,7 +137,7 @@ def main(confirm: bool = True) -> None:
     if stashed:
         _restore_stash(repo_path)
 
-    _commit_and_push(repo_path, timestamp)
+    _commit_and_push(repo_path, branch, timestamp)
 
 
 if __name__ == "__main__":
