@@ -4,5 +4,11 @@
 # Copy this file into any project that uses this repo skeleton
 
 repo:
-  local: "/Users/levon/Development/levonbecker/repo_setup_python"
+  local: "$HOME/Development/levonbecker/repo_setup_python"
+  remote: "github.com/LevonBecker/repo_setup_python"
+
+# Where /sync-setup pulls skeleton updates from. Leave these pointing at repo_setup_python even in
+# projects that copied this file in — only `repo:` above should change per-project.
+skeleton:
+  local: "$HOME/Development/levonbecker/repo_setup_python"
   remote: "github.com/LevonBecker/repo_setup_python"

@@ -1,10 +1,16 @@
 """Properties management for repo_setup_python."""
 
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 import yaml
+
+
+def _expand_path(value: str) -> Path:
+    """Expand ~ and environment variables (e.g. $HOME) in a properties.yml path value."""
+    return Path(os.path.expandvars(os.path.expanduser(value)))
 
 
 @lru_cache(maxsize=1)
@@ -66,7 +72,7 @@ def get_repo_local() -> Path:
         Path to local repository.
     """
     props = get_properties()
-    return Path(props["repo"]["local"])
+    return _expand_path(props["repo"]["local"])
 
 
 def get_repo_remote() -> str:
@@ -78,3 +84,28 @@ def get_repo_remote() -> str:
     """
     props = get_properties()
     return props["repo"]["remote"]
+
+
+def get_skeleton_local() -> Path:
+    """
+    Get the local path to the shared skeleton repo (repo_setup_python), used by /sync-setup.
+
+    A relative path is resolved against this repo's root.
+
+    Returns:
+        Path to the skeleton repository.
+    """
+    props = get_properties()
+    local = _expand_path(props["skeleton"]["local"])
+    return local if local.is_absolute() else get_repo_root() / local
+
+
+def get_skeleton_remote() -> str:
+    """
+    Get the skeleton repo's remote (e.g. "github.com/LevonBecker/repo_setup_python").
+
+    Returns:
+        Remote repository reference, without a URL scheme.
+    """
+    props = get_properties()
+    return props["skeleton"]["remote"]

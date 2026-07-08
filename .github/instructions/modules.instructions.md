@@ -13,6 +13,7 @@ Modules provide reusable Python logic consumed by invoke tasks, prompts, and scr
 | `modules/common/` | Helpers tightly coupled to invoke tasks (`cli`, `properties`, `utils`) |
 | `modules/repo/` | Git/PR workflow logic (pull, push, log, squash, rebase, pr) |
 | `modules/claude/` | Syncs `.claude/commands/` from `.github/prompts/` source of truth |
+| `modules/skeleton/` | Locates the shared skeleton repo (repo_setup_python) for `/sync-setup` |
 
 ## Module Conventions
 - One concern per file; filename matches the concern in snake_case
@@ -48,7 +49,7 @@ def main() -> None:
 | Module | Use When |
 |--------|----------|
 | `cli.py` | Click-like `echo`, `prompt`, `confirm`, `is_tty`, `command`/`option` decorators |
-| `properties.py` | Read `properties.yml` — `get_repo_local()`, `get_repo_remote()` |
+| `properties.py` | Read `properties.yml` — `get_repo_local()`, `get_repo_remote()`, `get_skeleton_local()`, `get_skeleton_remote()` |
 | `utils.py` | `success()`, `error()`, `warning()`, `info()`, `create_slug()` |
 
 ## Guidelines

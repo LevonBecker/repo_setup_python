@@ -10,6 +10,7 @@ modules/
   common/       # cli, properties, utils helpers
   repo/         # pull, push, log, squash, rebase (git workflow)
   claude/       # sync .claude/commands/ from .github/prompts/
+  skeleton/     # locate the shared skeleton repo for /sync-setup
 ```
 
 ## Submodules
@@ -19,6 +20,7 @@ modules/
 | [`common/`](common/README.md) | CLI helpers, `properties.yml` config reader, output/utility helpers |
 | [`repo/`](repo/README.md) | Git workflow, session logging, squash, and rebase |
 | [`claude/`](claude/README.md) | Sync `.claude/commands/` from `.github/prompts/` source of truth |
+| [`skeleton/`](skeleton/README.md) | Locate the shared skeleton repo for `/sync-setup` |
 
 ## Conventions
 
