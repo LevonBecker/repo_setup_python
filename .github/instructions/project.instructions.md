@@ -11,21 +11,23 @@ Python-based project using [Invoke](https://www.pyinvoke.org/) for task automati
 pyproject.toml    # Dependencies, ruff/pylint config
 invoke.yml        # Invoke config (auto_dash_names: false)
 setup.sh          # Shell-based setup script (uv venv + uv sync)
-properties.yml    # Project configuration (repo path, remote)
+properties.yml    # Project configuration (repo path/remote, skeleton path/remote)
 modules/
   common/         # cli.py, properties.py, utils.py — shared helpers
   repo/           # pull.py, push.py, log.py, squash.py, rebase.py, pr.py — git/PR workflow modules
   claude/         # sync.py — syncs .claude/commands/ from .github/prompts/
+  skeleton/       # sync.py — locates the shared skeleton repo for /sync-setup
 tasks/
-  __init__.py     # Wires the invoke Collection (claude, repo, ruff, tests, fix, test)
+  __init__.py     # Wires the invoke Collection (claude, repo, ruff, skeleton, tests, fix, test)
   claude.py       # claude.sync
   repo.py         # repo.pull, repo.push, repo.log, repo.squash, repo.rebase, repo.pr_diff, repo.pr_notes_save, repo.pr_create
   ruff.py         # ruff.fix, ruff.format
+  skeleton.py     # skeleton.locate_source
   tests.py        # tests.actionlint, tests.pylint, tests.rufflint, tests.yamllint
   combos.py       # Top-level aliases: fix, test
 .github/
   instructions/   # Copilot instruction files
-  prompts/        # Copilot prompt files (/push, /pull, /squash, /rebase, /fix, /test, /pr-notes, /pr, /punch-it-chewy) — source of truth for slash commands
+  prompts/        # Copilot prompt files (/push, /pull, /squash, /rebase, /fix, /test, /pr-notes, /pr, /punch-it-chewy, /sync-setup) — source of truth for slash commands
   workflows/      # tests.yml (reusable), feature_branches.yml, protected_branches.yml
 .claude/
   commands/       # Claude Code slash commands, kept in sync with .github/prompts/ via `uv run --no-sync invoke claude.sync`
@@ -67,4 +69,5 @@ uv run --no-sync invoke repo.pr_diff       # Print current branch's commit log/d
 uv run --no-sync invoke repo.pr_notes_save # Save PR notes to tmp/pull_requests/ (--content=...)
 uv run --no-sync invoke repo.pr_create     # Open a GitHub PR via gh (--title=... --content=...)
 uv run --no-sync invoke claude.sync # Sync .claude/commands/ from .github/prompts/ (additive; --force to overwrite)
+uv run --no-sync invoke skeleton.locate_source # Resolve the shared skeleton repo's path for /sync-setup
 ```

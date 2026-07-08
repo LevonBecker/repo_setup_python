@@ -16,21 +16,23 @@ path before running tasks.
 pyproject.toml        # Dependencies (Python >=3.14), ruff/pylint config
 invoke.yml             # Invoke config (auto_dash_names: false)
 setup.sh               # Initial environment setup (uv venv + uv sync)
-properties.yml         # Project configuration (repo path, remote)
+properties.yml         # Project configuration (repo path/remote, skeleton path/remote)
 modules/
   common/               # cli.py, properties.py, utils.py — shared helpers
   repo/                 # pull.py, push.py, log.py, squash.py, rebase.py, pr.py — git/PR workflow modules
   claude/               # sync.py — syncs .claude/commands/ from .github/prompts/
+  skeleton/             # sync.py — locates the shared skeleton repo for /sync-setup
 tasks/
-  __init__.py           # Wires the invoke Collection (claude, repo, ruff, tests, fix, test)
+  __init__.py           # Wires the invoke Collection (claude, repo, ruff, skeleton, tests, fix, test)
   claude.py             # claude.sync
   repo.py               # repo.pull, repo.push, repo.log, repo.squash, repo.rebase, repo.pr_diff, repo.pr_notes_save, repo.pr_create
   ruff.py               # ruff.fix, ruff.format
+  skeleton.py           # skeleton.locate_source
   tests.py              # tests.actionlint, tests.pylint, tests.rufflint, tests.yamllint
   combos.py             # Top-level aliases: fix, test
 .github/
   instructions/         # Copilot instructions per concern
-  prompts/              # /push, /pull, /squash, /rebase, /fix, /test, /setup, /pr-notes, /pr, /punch-it-chewy — source of truth
+  prompts/              # /push, /pull, /squash, /rebase, /fix, /test, /setup, /pr-notes, /pr, /punch-it-chewy, /sync-setup — source of truth
   workflows/
     tests.yml            # Reusable CI: ruff + pylint + yamllint + actionlint
     feature_branches.yml # Runs tests.yml on pull_request
@@ -56,6 +58,7 @@ uv run --no-sync invoke repo.pr_diff       # Print current branch's commit log/d
 uv run --no-sync invoke repo.pr_notes_save # Save PR notes to tmp/pull_requests/ (--content=...)
 uv run --no-sync invoke repo.pr_create     # Open a GitHub PR via gh (--title=... --content=...)
 uv run --no-sync invoke claude.sync  # Sync .claude/commands/ from .github/prompts/ (additive; --force to overwrite)
+uv run --no-sync invoke skeleton.locate_source # Resolve the shared skeleton repo's path for /sync-setup
 ```
 
 ## AI Prompts
@@ -71,6 +74,7 @@ uv run --no-sync invoke claude.sync  # Sync .claude/commands/ from .github/promp
 | `/pr-notes` | `uv run --no-sync invoke repo.pr_diff` | Draft PR notes vs. base branch; saves to `tmp/pull_requests/` when run standalone |
 | `/pr` | `uv run --no-sync invoke repo.pr_create` | Draft PR notes and open a Pull Request via `gh` (does not push) |
 | `/punch-it-chewy` | — | Push, then draft notes and open a Pull Request |
+| `/sync-setup` | `uv run --no-sync invoke skeleton.locate_source` | Pull shared tooling updates from the repo_setup_python skeleton repo into this project |
 
 ## Modules
 | Module | Purpose |
@@ -78,6 +82,7 @@ uv run --no-sync invoke claude.sync  # Sync .claude/commands/ from .github/promp
 | [`modules/common/`](modules/common/README.md) | CLI helpers, `properties.yml` config reader, output/utility helpers |
 | [`modules/repo/`](modules/repo/README.md) | Git workflow and session logging |
 | [`modules/claude/`](modules/claude/README.md) | Sync `.claude/commands/` from `.github/prompts/` source of truth |
+| [`modules/skeleton/`](modules/skeleton/README.md) | Locate the shared skeleton repo for `/sync-setup` |
 
 See [modules/README.md](modules/README.md) for full details.
 
