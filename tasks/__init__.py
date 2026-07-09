@@ -31,7 +31,7 @@ namespace.add_collection(ruff, name="ruff")
 namespace.add_collection(skeleton, name="skeleton")
 namespace.add_collection(tests, name="tests")
 namespace.add_collection(uv, name="uv")
-namespace.add_collection(versioning, name="versioning")
+namespace.add_collection(versioning, name="ver")
 
 namespace.add_task(combos.fix, name="fix")
 namespace.add_task(combos.test, name="test")
