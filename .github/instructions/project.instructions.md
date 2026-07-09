@@ -37,6 +37,8 @@ tasks/
 .vscode/
   extensions.json # Recommended VS Code extensions
   settings.json   # Ruff formatter + Python interpreter settings
+addons/
+  shopfiy_dawn_theme/ # Shopify Dawn theme addon — see "Addons" in README.md before using
 ```
 
 ## Key Conventions
@@ -46,6 +48,10 @@ tasks/
 - `invoke.yml` sets `auto_dash_names: false` so task names keep underscores (e.g. `repo.pull`, not `repo.pull-dash`)
 - `.github/prompts/` is the source of truth for slash commands; `.claude/commands/` mirrors it — run `invoke claude.sync` to add new commands, `--force` to overwrite hand-crafted ones
 - Always run `uv run --no-sync ...`, never bare `uv run ...` — without `--no-sync`, `uv run` re-resolves and may silently upgrade a dependency before the command runs. Any dependency change must go through an explicit `uv sync`/`uv lock` step that the user can review, not an implicit one buried inside a task run
+- `addons/<name>/` mirrors the root layout but is not usable from this repo's root — its files must
+  be copied into a consuming repo's actual root (root-relative imports, `applyTo` globs, and task
+  wiring all assume that). Excluded from `ruff`/`pylint` via `pyproject.toml`
+  (`extend-exclude`/`ignore-paths`) for the same reason — see "Addons" in `README.md`
 
 ## Dependencies (pyproject.toml)
 - `invoke` — task runner
@@ -74,6 +80,6 @@ uv run --no-sync invoke repo.pr_create     # Open a GitHub PR via gh (--title=..
 uv run --no-sync invoke claude.sync # Sync .claude/commands/ from .github/prompts/ (additive; --force to overwrite)
 uv run --no-sync invoke skeleton.locate_source # Resolve the shared skeleton repo's path for /sync-setup
 uv run --no-sync invoke versioning.libs    # Check pyproject.toml deps vs. latest releases, update version locks
-uv run --no-sync invoke versioning.all     # Run every version check (currently just libs)
+uv run --no-sync invoke versioning.all     # Run every version check (libs, workflows)
 uv run --no-sync invoke uv.upgrade  # Install the versions currently locked in pyproject.toml (uv sync)
 ```

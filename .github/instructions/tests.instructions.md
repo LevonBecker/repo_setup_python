@@ -50,3 +50,10 @@ tasks/
 
 ## yamllint
 - Config lives in `.yamllint` at project root
+
+## Addons
+`addons/**` is excluded from Ruff (`extend-exclude`) and Pylint (`ignore-paths`) in `pyproject.toml`
+— those files are only valid once copied into a consuming repo's root, so linting them here would
+fail on imports/paths that don't resolve from this repo's root. `yamllint`/`actionlint` still scan
+`addons/**` YAML/workflow files (nothing to exclude by root-relative path assumptions there yet).
+See "Addons" in `README.md`.

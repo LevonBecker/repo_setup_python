@@ -32,11 +32,13 @@ uv run --no-sync invoke dawn.upgrade --version=latest   # same as omitting --ver
 Upgrading Dawn is a three-step process split across CI and local/AI-assisted work, deliberately —
 see "Why the Rebase-and-PR Step Isn't Automated in CI" below for why step 3 can't be a CI job:
 
-1. **Run `dawn.list`** to see the latest upstream tag and what `dawn_vanilla` is currently on.
+1. **Run `dawn.list`** to see the latest upstream tag and what `dawn_vanilla` is currently on
+   (optional — the next step's `version` input defaults to `latest` and resolves it itself).
 2. **Run the "Upgrade" GitHub Actions workflow** (`workflow_dispatch`, `version` input = the tag
-   from step 1) — this merges that one pinned upstream tag into `dawn_vanilla` with upstream
-   winning any conflict (`dawn_vanilla` is meant to stay a clean mirror, so this part is safe to
-   fully automate), and pushes it.
+   from step 1, or leave it as `latest` to have the workflow look up the current latest tag
+   itself) — this merges that one pinned upstream tag into `dawn_vanilla` with upstream winning
+   any conflict (`dawn_vanilla` is meant to stay a clean mirror, so this part is safe to fully
+   automate), and pushes it. Re-running with the same (or already-synced) version is a safe no-op.
 3. **Run `dawn.upgrade`** (or `/dawn upgrade`) locally — creates `upgrade/dawn-vanilla-<version>`
    off the now-updated `dawn_vanilla`, and rebases it onto `development`.
    - Clean rebase → run `/push` then `/pr` to open the PR into `development`.

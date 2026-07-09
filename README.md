@@ -47,6 +47,8 @@ tasks/
 .vscode/
   extensions.json       # Recommended VS Code extensions
   settings.json         # Ruff formatter + Python interpreter settings
+addons/
+  shopfiy_dawn_theme/    # Shopify Dawn theme addon — see Addons below before using
 ```
 
 ## Invoke Tasks
@@ -96,6 +98,23 @@ uv run --no-sync invoke uv.upgrade    # Install the versions currently locked in
 | [`modules/versioning/`](modules/versioning/README.md) | Check `pyproject.toml` deps and workflow action refs vs. latest releases, update locks |
 
 See [modules/README.md](modules/README.md) for full details.
+
+## Addons
+Optional, project-specific extensions live under `addons/<name>/` and mirror the root layout
+(`modules/`, `tasks/`, `.github/`, `.claude/`). They are **not** usable from inside
+`repo_setup_python` — they only work once their files are copied into the consuming repo's
+actual root, merged with what's already there, because they:
+- Import via root-relative paths (e.g. `from modules.dawn import list`)
+- Have `applyTo` instruction globs written for a root-level path (e.g. `modules/dawn/**`)
+- Need their `tasks/*.py` task module wired into that repo's `tasks/__init__.py` `Collection` by
+  hand — nothing here auto-discovers them
+
+They're excluded from `ruff`/`pylint` here (`pyproject.toml` `extend-exclude`/`ignore-paths`) since
+they aren't meant to lint clean from this repo's root.
+
+| Addon | Adds | Move these files to the consuming repo's root |
+|-------|------|------------------------------------------------|
+| [`addons/shopfiy_dawn_theme/`](addons/shopfiy_dawn_theme/) | `dawn.list` / `dawn.upgrade` invoke tasks for tracking and staging upstream Shopify/dawn theme upgrades | `modules/dawn/` (`__init__.py`, `list.py`, `upgrade.py`, `README.md`), `tasks/dawn.py`, `.github/workflows/{deploy,promote,release,tests,upgrade}.yml`, `.github/instructions/dawn.instructions.md`, `.github/prompts/dawn.prompt.md`, `.claude/commands/dawn.md` |
 
 ## CI
 GitHub Actions runs Ruff, Pylint, yamllint, and actionlint on every push and pull request via
