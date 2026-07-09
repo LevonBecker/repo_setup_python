@@ -1,20 +1,25 @@
 ---
 name: Deploy
-run-name: "Deploy to ${{ inputs.env }} (${{ github.head_ref || github.ref_name }})"
+run-name: "Deploy to ${{ inputs.env || 'dev' }} (${{ github.head_ref || github.ref_name }})"
 
 on:
+  push:
+    branches:
+      - development    # Triggers when a PR is merged to the development branch
   workflow_call:
     inputs:
       env:
-        description: 'Environment to deploy to (dev or prd)'
-        required: true
+        description: 'Environment (dev or prd)'
+        required: false
         type: string
+        default: dev
   workflow_dispatch:
     inputs:
       env:
-        description: 'Environment to deploy to'
-        required: true
+        description: 'Environment'
+        required: false
         type: choice
+        default: dev
         options:
           - dev
           - prd
@@ -23,6 +28,8 @@ jobs:
   # 🚀 Deploy job
   deploy:
     runs-on: ubuntu-latest
+    env:
+      DEPLOY_ENV: ${{ inputs.env || 'dev' }}
     steps:
       - uses: actions/checkout@v7
       - run: npm install -g @shopify/cli @shopify/theme
@@ -35,10 +42,10 @@ jobs:
       - name: Install Dependencies
         run: uv sync
 
-      - name: Deploy to ${{ inputs.env }} Theme
+      - name: Deploy to ${{ env.DEPLOY_ENV }} Theme
         run: |
           uv run --no-sync invoke debug.env
-          uv run --no-sync invoke shopify.deploy --env=${{ inputs.env }}
+          uv run --no-sync invoke shopify.deploy --env=${{ env.DEPLOY_ENV }}
         env:
           SHOPIFY_CLI_THEME_TOKEN: ${{ secrets.SHOPIFY_CLI_THEME_TOKEN }}
           SHOPIFY_FLAG_STORE: ${{ secrets.SHOPIFY_FLAG_STORE }}

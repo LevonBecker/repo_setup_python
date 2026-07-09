@@ -3,7 +3,9 @@ name: Tests
 run-name: "Tests (${{ github.head_ref || github.ref_name }})"
 
 on:
-  workflow_call:
+  pull_request:
+    branches:
+      - development  # Trigger on pull requests targeting the development branch
 
 jobs:
   # https://github.com/rhysd/actionlint
