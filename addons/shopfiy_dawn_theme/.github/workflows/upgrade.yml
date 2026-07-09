@@ -1,6 +1,6 @@
 ---
 name: Upgrade
-run-name: "Upgrade (${{ github.head_ref || github.ref_name }})"
+run-name: "Upgrade (dawn_vanilla - ${{ inputs.version }})"
 
 on:
   workflow_dispatch:  # Manual trigger only

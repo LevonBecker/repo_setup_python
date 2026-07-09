@@ -1,13 +1,14 @@
 # Dawn Module
 
-Lists upstream Shopify/dawn version tags, and stages a Dawn upgrade onto a review branch for
-manual conflict resolution. Does not install anything, and never auto-resolves conflicts or
-opens a PR on its own.
+Lists upstream Shopify/dawn version tags, prints the Dawn version currently checked out on this
+branch, and stages a Dawn upgrade onto a review branch for manual conflict resolution. Does not
+install anything, and never auto-resolves conflicts or opens a PR on its own.
 
 ## Usage
 
 ```sh
-uv run --no-sync invoke dawn.list                    # list upstream Shopify/dawn tags, latest highlighted
+uv run --no-sync invoke dawn.list                       # list upstream Shopify/dawn tags, latest highlighted
+uv run --no-sync invoke dawn.version                    # print the Dawn version on this branch
 uv run --no-sync invoke dawn.upgrade                    # stage the latest upstream tag for review
 uv run --no-sync invoke dawn.upgrade --version=v15.5.0  # stage a specific tag for review
 uv run --no-sync invoke dawn.upgrade --version=latest   # same as omitting --version
@@ -34,6 +35,24 @@ uv run --no-sync invoke dawn.list
 modules/dawn/list.py
   ↓
 git ls-remote --tags Shopify/dawn   +   git describe --tags dawn_vanilla   →   printed list
+```
+
+## `version.py` — `dawn.version`
+
+Reads `config/settings_schema.json`'s `theme_info.theme_version` and prints it — the same field
+Shopify's theme editor reads to show the version in the admin. Read-only, no git/network calls.
+
+This can drift from what `dawn_vanilla` is tagged at (per `dawn.list`) if `development` ever picks
+up version-bumping content some other way than a straight `dawn_vanilla` merge — the two are
+different sources of truth (checked-out theme content vs. git tag history) and aren't guaranteed
+to agree if something upstream of the normal upgrade flow touched this file.
+
+```
+uv run --no-sync invoke dawn.version
+  ↓
+modules/dawn/version.py
+  ↓
+config/settings_schema.json theme_info.theme_version   →   printed version
 ```
 
 ## `upgrade.py` — `dawn.upgrade`
@@ -67,9 +86,9 @@ git rebase origin/development   →   clean, or stops with conflicts to resolve 
 ## Conventions
 
 - Every module exposes a module-level `main()` entry point
-- Neither file takes `@click.command()`-style options — both use plain keyword arguments
-  (`dawn.upgrade`'s optional `version`), matching `modules/shopify/upgrade.py`'s pattern for
-  simple-argument modules
+- None of the three files use `@click.command()`-style options — each takes plain keyword
+  arguments (`dawn.upgrade`'s optional `version`; `list.py`/`version.py` take none), matching
+  `modules/shopify/upgrade.py`'s pattern for simple-argument modules
 - `list.py`'s `fetch_tags()`/`sort_key()` are deliberately public (no leading `_`) since
   `upgrade.py` imports them directly — everything else in both files is a private (`_`-prefixed)
   helper

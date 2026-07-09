@@ -1,6 +1,6 @@
 ---
 name: Deploy
-run-name: "Deploy to ${{ inputs.env || 'dev' }} (${{ github.head_ref || github.ref_name }})"
+run-name: "Deploy to ${{ inputs.env || 'dev' }}"
 
 on:
   push:
@@ -25,13 +25,69 @@ on:
           - prd
 
 jobs:
+  # 🔢 Bump VERSION build number (dev deploys only — release.yml owns VERSION for prd)
+  bump-version:
+    if: ${{ (inputs.env || 'dev') == 'dev' }}
+    runs-on: ubuntu-latest
+    concurrency: version-bump-development  # serialize VERSION bumps — no racing build numbers
+    permissions:
+      contents: write  # repo default GITHUB_TOKEN permission is read-only; this job needs to push a branch
+      pull-requests: write  # 'development' requires changes via PR (0 required reviews) — no direct push allowed
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: development
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+
+      - name: Install Dependencies
+        run: uv sync
+
+      - name: Bump VERSION
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          uv run --no-sync invoke version.bump_build
+          new_version="$(cat VERSION)"
+          branch="chore/bump-version-${{ github.run_id }}"
+          git checkout -b "$branch"
+          git add VERSION
+          git commit -m "chore: bump VERSION to $new_version"
+          git push origin "$branch"
+          gh pr create --repo "${{ github.repository }}" --base development --head "$branch" \
+            --title "chore: bump VERSION to $new_version" \
+            --body "Automated VERSION bump for a dev deploy."
+          gh pr merge --repo "${{ github.repository }}" "$branch" --squash --delete-branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # 🚀 Deploy job
   deploy:
+    needs: bump-version
+    if: ${{ !cancelled() && !failure() }}  # run even when bump-version is skipped (prd), not on its failure
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write  # repo default GITHUB_TOKEN permission is read-only; renaming the run needs write
     env:
       DEPLOY_ENV: ${{ inputs.env || 'dev' }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          # dev already has bump-version's push; prd (called from release.yml) reads main,
+          # already finalized by release.yml's version job + promote.yml
+          ref: ${{ env.DEPLOY_ENV == 'dev' && 'development' || 'main' }}
+
+      - name: Set run name
+        run: |
+          gh api --method PATCH "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            -f display_title="Deploy to ${{ env.DEPLOY_ENV }} (v$(cat VERSION))"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - run: npm install -g @shopify/cli @shopify/theme
 
       - name: Setup uv

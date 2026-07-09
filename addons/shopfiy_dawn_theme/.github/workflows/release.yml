@@ -1,17 +1,64 @@
 ---
 name: Release
-run-name: "Release (${{ github.head_ref || github.ref_name }})"
+run-name: "Release"
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version (i.e. 1.0.0)'
-        required: true
 
 jobs:
+  # 🔢 Finalize VERSION (drop the build suffix)
+  version:
+    runs-on: ubuntu-latest
+    concurrency: version-bump-development  # serialize VERSION changes against deploy.yml's bumps
+    permissions:
+      contents: write  # repo default GITHUB_TOKEN permission is read-only; this job needs to push a branch
+      pull-requests: write  # 'development' requires changes via PR (0 required reviews) — no direct push allowed
+      actions: write  # renaming the run needs write too
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: development
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+
+      - name: Install Dependencies
+        run: uv sync
+
+      - name: Finalize VERSION for release
+        id: bump
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          uv run --no-sync invoke version.bump_release
+          new_version="$(cat VERSION)"
+          echo "version=$new_version" >> "$GITHUB_OUTPUT"
+          branch="chore/release-version-${{ github.run_id }}"
+          git checkout -b "$branch"
+          git add VERSION
+          git commit -m "chore: release v$new_version"
+          git push origin "$branch"
+          gh pr create --repo "${{ github.repository }}" --base development --head "$branch" \
+            --title "chore: release v$new_version" \
+            --body "Automated VERSION finalize for release v$new_version."
+          gh pr merge --repo "${{ github.repository }}" "$branch" --squash --delete-branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set run name
+        run: |
+          gh api --method PATCH "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            -f display_title="Release (v${{ steps.bump.outputs.version }})"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   # 🔀 Promote development → main
   promote:
+    needs: version
     uses: ./.github/workflows/promote.yml
     permissions:
       contents: write  # repo default GITHUB_TOKEN permission is read-only; the called workflow needs to push to main
@@ -27,7 +74,7 @@ jobs:
 
   # 🏷️ Create GitHub Release
   release:
-    needs: deploy
+    needs: [version, deploy]
     runs-on: ubuntu-latest
     permissions:
       contents: write  # repo default GITHUB_TOKEN permission is read-only; creating a release needs write
@@ -38,9 +85,9 @@ jobs:
 
       - name: Create GitHub Release
         run: >-
-          gh release create "v${{ github.event.inputs.version }}"
+          gh release create "v${{ needs.version.outputs.version }}"
           --target main
-          --title "v${{ github.event.inputs.version }}"
+          --title "v${{ needs.version.outputs.version }}"
           --generate-notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -5,9 +5,11 @@ applyTo: "modules/dawn/**"
 # Dawn Instructions
 
 ## Purpose
-Two actions, both scoped to upstream `Shopify/dawn`:
+Three actions, all scoped to upstream `Shopify/dawn`:
 - `dawn.list` — lists every tag published on upstream `Shopify/dawn`, sorted, with the latest
   highlighted and compared against what `dawn_vanilla` is currently synced to. Read-only.
+- `dawn.version` — prints the Dawn version currently checked out on this branch, per
+  `config/settings_schema.json`'s `theme_info.theme_version`. Read-only, no git/network calls.
 - `dawn.upgrade` — creates a feature branch off `dawn_vanilla`, rebased onto `development`, for
   manual conflict resolution. Not read-only — creates a local branch and rebases.
 
@@ -16,6 +18,7 @@ See `modules/dawn/README.md` for full behavior/data-flow details on each.
 ## Usage
 ```sh
 uv run --no-sync invoke dawn.list                       # list upstream Shopify/dawn tags, latest highlighted
+uv run --no-sync invoke dawn.version                    # print the Dawn version on this branch
 uv run --no-sync invoke dawn.upgrade                    # stage the latest upstream tag for review
 uv run --no-sync invoke dawn.upgrade --version=v15.5.0  # stage a specific tag for review
 uv run --no-sync invoke dawn.upgrade --version=latest   # same as omitting --version
@@ -25,6 +28,9 @@ uv run --no-sync invoke dawn.upgrade --version=latest   # same as omitting --ver
 ## Relationship to Other Workflows
 - `dawn.list` is purely informational — it tells you what `version` value (e.g. `v15.5.0`)
   to pass to the **Upgrade** GitHub Actions workflow (`.github/workflows/upgrade.yml`)
+- `dawn.version` reads a different source of truth than `dawn.list` — the checked-out theme's own
+  `theme_info.theme_version` versus `dawn_vanilla`'s git tag history — and the two can disagree if
+  `development` ever picked up version-bumping content some other way than a `dawn_vanilla` merge
 - `dawn.upgrade` assumes the Upgrade workflow has already synced `dawn_vanilla` to the target
   version; it only handles bringing that onto a `development`-based review branch
 
@@ -68,6 +74,7 @@ local fetch, no tag namespace collision, safe to run anytime.
 ## Module Conventions
 - Same conventions as `modules.instructions.md` generally — `main()` entry point per module,
   `subprocess.run([...], cwd=repo_path)` never `shell=True`, output via `modules.common.utils`
-- Neither `list.py` nor `upgrade.py` uses `@click.command()`-style options — both take plain
-  keyword arguments and stay undecorated (see `modules/dawn/README.md`'s Conventions section for
-  why, and why `list.py`'s `fetch_tags()`/`sort_key()` are public rather than `_`-prefixed)
+- None of `list.py`, `version.py`, or `upgrade.py` use `@click.command()`-style options — each
+  takes plain keyword arguments and stays undecorated (see `modules/dawn/README.md`'s Conventions
+  section for why, and why `list.py`'s `fetch_tags()`/`sort_key()` are public rather than
+  `_`-prefixed)
