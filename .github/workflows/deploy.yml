@@ -1,0 +1,46 @@
+---
+name: Deploy
+run-name: "Deploy to ${{ inputs.env }} (${{ github.head_ref || github.ref_name }})"
+
+on:
+  workflow_call:
+    inputs:
+      env:
+        description: 'Environment to deploy to (dev or prd)'
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      env:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prd
+
+jobs:
+  # 🚀 Deploy job
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: npm install -g @shopify/cli @shopify/theme
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+
+      - name: Install Dependencies
+        run: uv sync
+
+      - name: Deploy to ${{ inputs.env }} Theme
+        run: |
+          uv run --no-sync invoke debug.env
+          uv run --no-sync invoke shopify.deploy --env=${{ inputs.env }}
+        env:
+          SHOPIFY_CLI_THEME_TOKEN: ${{ secrets.SHOPIFY_CLI_THEME_TOKEN }}
+          SHOPIFY_FLAG_STORE: ${{ secrets.SHOPIFY_FLAG_STORE }}
+          SHOPIFY_THEME_ID_DEV: ${{ secrets.SHOPIFY_THEME_ID_DEV }}
+          SHOPIFY_THEME_ID_PRD: ${{ secrets.SHOPIFY_THEME_ID_PRD }}

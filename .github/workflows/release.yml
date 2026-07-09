@@ -1,18 +1,17 @@
 ---
-name: Release to Production
+name: Release
+run-name: "Release (${{ github.head_ref || github.ref_name }})"
 
 on:
   workflow_dispatch:
     inputs:
-      confirm:
-        description: 'Type "release" to confirm promotion and deployment to production'
+      version:
+        description: 'Version (i.e. 1.0.0)'
         required: true
-        default: ''
 
 jobs:
   # 🔀 Promote development → main
   promote:
-    if: github.event.inputs.confirm == 'release'
     uses: ./.github/workflows/promote.yml
     permissions:
       contents: write  # repo default GITHUB_TOKEN permission is read-only; the called workflow needs to push to main
@@ -21,5 +20,27 @@ jobs:
   # 🚀 Deploy to production
   deploy:
     needs: promote
-    uses: ./.github/workflows/deploy_prd.yml
+    uses: ./.github/workflows/deploy.yml
+    with:
+      env: prd
     secrets: inherit
+
+  # 🏷️ Create GitHub Release
+  release:
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # repo default GITHUB_TOKEN permission is read-only; creating a release needs write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main  # tag the freshly promoted merge commit, not the dispatch ref
+
+      - name: Create GitHub Release
+        run: >-
+          gh release create "v${{ github.event.inputs.version }}"
+          --target main
+          --title "v${{ github.event.inputs.version }}"
+          --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

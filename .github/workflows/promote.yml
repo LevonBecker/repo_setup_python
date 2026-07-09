@@ -1,24 +1,19 @@
 ---
-name: Promote to Production
+name: Promote
+run-name: "Promote (${{ github.head_ref || github.ref_name }})"
 
 on:
   workflow_call:       # allows calling from release.yml
   workflow_dispatch:   # Manual trigger only
-    inputs:
-      confirm:
-        description: 'Type "PROMOTE" to confirm promotion to main'
-        required: true
-        default: ''
 
 jobs:
   # 🚀 Promote to Production
   promote:
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_call' || github.event.inputs.confirm == 'PROMOTE'
     permissions:
       contents: write  # repo default GITHUB_TOKEN permission is read-only; this job needs to push to main
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: development  # Checkout development branch
           fetch-depth: 0    # Full history so main/development share a discoverable common ancestor
@@ -30,7 +25,8 @@ jobs:
           git config user.email "actions@github.com"
           git fetch origin main
           git checkout main
-          git merge origin/development --no-ff -m "chore: release to production"
+          # -X theirs: development is the source of truth; on conflict its side wins
+          git merge origin/development --no-ff -X theirs -m "chore: release to production"
           git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

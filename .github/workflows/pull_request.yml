@@ -1,0 +1,12 @@
+---
+name: Pull Request
+run-name: "Pull Request (${{ github.head_ref || github.ref_name }})"
+
+on:
+  pull_request:
+    branches:
+      - development  # Trigger on pull requests targeting the development branch
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
