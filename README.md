@@ -22,17 +22,20 @@ modules/
   repo/                 # pull.py, push.py, log.py, squash.py, rebase.py, pr.py — git/PR workflow modules
   claude/               # sync.py — syncs .claude/commands/ from .github/prompts/
   skeleton/             # sync.py — locates the shared skeleton repo for /sync-setup
+  versioning/           # lib.py, workflows.py — check pyproject.toml deps & workflow action refs vs. latest releases
 tasks/
-  __init__.py           # Wires the invoke Collection (claude, repo, ruff, skeleton, tests, fix, test)
+  __init__.py           # Wires the invoke Collection (claude, repo, ruff, skeleton, tests, uv, versioning, fix, test)
   claude.py             # claude.sync
   repo.py               # repo.pull, repo.push, repo.log, repo.squash, repo.rebase, repo.pr_diff, repo.pr_notes_save, repo.pr_create
   ruff.py               # ruff.fix, ruff.format
   skeleton.py           # skeleton.locate_source
   tests.py              # tests.actionlint, tests.pylint, tests.rufflint, tests.yamllint
+  uv.py                 # uv.upgrade
+  versioning.py         # versioning.libs, versioning.workflows, versioning.all
   combos.py             # Top-level aliases: fix, test
 .github/
   instructions/         # Copilot instructions per concern
-  prompts/              # /push, /pull, /squash, /rebase, /fix, /test, /setup, /pr-notes, /pr, /punch-it-chewy, /sync-setup — source of truth
+  prompts/              # /push, /pull, /squash, /rebase, /fix, /test, /setup, /pr-notes, /pr, /punch-it-chewy, /sync-setup, /versioning — source of truth
   workflows/
     tests.yml            # Reusable CI: ruff + pylint + yamllint + actionlint
     feature_branches.yml # Runs tests.yml on pull_request
@@ -59,6 +62,10 @@ uv run --no-sync invoke repo.pr_notes_save # Save PR notes to tmp/pull_requests/
 uv run --no-sync invoke repo.pr_create     # Open a GitHub PR via gh (--title=... --content=...)
 uv run --no-sync invoke claude.sync  # Sync .claude/commands/ from .github/prompts/ (additive; --force to overwrite)
 uv run --no-sync invoke skeleton.locate_source # Resolve the shared skeleton repo's path for /sync-setup
+uv run --no-sync invoke versioning.libs      # Check pyproject.toml deps vs. latest releases, update version locks
+uv run --no-sync invoke versioning.workflows # Check .github/workflows/ action refs vs. latest majors, update pins
+uv run --no-sync invoke versioning.all       # Run every version check (libs, workflows)
+uv run --no-sync invoke uv.upgrade    # Install the versions currently locked in pyproject.toml (uv sync)
 ```
 
 ## AI Prompts
@@ -75,6 +82,7 @@ uv run --no-sync invoke skeleton.locate_source # Resolve the shared skeleton rep
 | `/pr` | `uv run --no-sync invoke repo.pr_create` | Draft PR notes and open a Pull Request via `gh` (does not push) |
 | `/punch-it-chewy` | — | Push, then draft notes and open a Pull Request |
 | `/sync-setup` | `uv run --no-sync invoke skeleton.locate_source` | Pull shared tooling updates from the repo_setup_python skeleton repo into this project |
+| `/versioning` | `uv run --no-sync invoke versioning.all` | Check pyproject.toml deps and workflow action refs vs. latest releases, update locks (does not install or run) |
 
 ## Modules
 | Module | Purpose |
@@ -83,6 +91,7 @@ uv run --no-sync invoke skeleton.locate_source # Resolve the shared skeleton rep
 | [`modules/repo/`](modules/repo/README.md) | Git workflow and session logging |
 | [`modules/claude/`](modules/claude/README.md) | Sync `.claude/commands/` from `.github/prompts/` source of truth |
 | [`modules/skeleton/`](modules/skeleton/README.md) | Locate the shared skeleton repo for `/sync-setup` |
+| [`modules/versioning/`](modules/versioning/README.md) | Check `pyproject.toml` deps and workflow action refs vs. latest releases, update locks |
 
 See [modules/README.md](modules/README.md) for full details.
 

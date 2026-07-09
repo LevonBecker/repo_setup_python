@@ -1,0 +1,25 @@
+---
+name: Release to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "release" to confirm promotion and deployment to production'
+        required: true
+        default: ''
+
+jobs:
+  # 🔀 Promote development → main
+  promote:
+    if: github.event.inputs.confirm == 'release'
+    uses: ./.github/workflows/promote.yml
+    permissions:
+      contents: write  # repo default GITHUB_TOKEN permission is read-only; the called workflow needs to push to main
+    secrets: inherit
+
+  # 🚀 Deploy to production
+  deploy:
+    needs: promote
+    uses: ./.github/workflows/deploy_prd.yml
+    secrets: inherit

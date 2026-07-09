@@ -134,6 +134,7 @@ dependencies = [
     { name = "pylint" },
     { name = "pyyaml" },
     { name = "ruff" },
+    { name = "tomlkit" },
     { name = "yamllint" },
 ]
 
@@ -144,6 +145,7 @@ requires-dist = [
     { name = "pylint", specifier = "~=4.0.5" },
     { name = "pyyaml", specifier = "~=6.0.3" },
     { name = "ruff", specifier = "~=0.15.4" },
+    { name = "tomlkit", specifier = "~=0.15.0" },
     { name = "yamllint", specifier = "~=1.38.0" },
 ]
 

@@ -17,17 +17,20 @@ modules/
   repo/           # pull.py, push.py, log.py, squash.py, rebase.py, pr.py — git/PR workflow modules
   claude/         # sync.py — syncs .claude/commands/ from .github/prompts/
   skeleton/       # sync.py — locates the shared skeleton repo for /sync-setup
+  versioning/     # lib.py, workflows.py — check pyproject.toml deps & workflow action refs vs. latest releases
 tasks/
-  __init__.py     # Wires the invoke Collection (claude, repo, ruff, skeleton, tests, fix, test)
+  __init__.py     # Wires the invoke Collection (claude, repo, ruff, skeleton, tests, uv, versioning, fix, test)
   claude.py       # claude.sync
   repo.py         # repo.pull, repo.push, repo.log, repo.squash, repo.rebase, repo.pr_diff, repo.pr_notes_save, repo.pr_create
   ruff.py         # ruff.fix, ruff.format
   skeleton.py     # skeleton.locate_source
   tests.py        # tests.actionlint, tests.pylint, tests.rufflint, tests.yamllint
+  uv.py           # uv.upgrade
+  versioning.py   # versioning.libs, versioning.workflows, versioning.all
   combos.py       # Top-level aliases: fix, test
 .github/
   instructions/   # Copilot instruction files
-  prompts/        # Copilot prompt files (/push, /pull, /squash, /rebase, /fix, /test, /pr-notes, /pr, /punch-it-chewy, /sync-setup) — source of truth for slash commands
+  prompts/        # Copilot prompt files (/push, /pull, /squash, /rebase, /fix, /test, /pr-notes, /pr, /punch-it-chewy, /sync-setup, /versioning) — source of truth for slash commands
   workflows/      # tests.yml (reusable), feature_branches.yml, protected_branches.yml
 .claude/
   commands/       # Claude Code slash commands, kept in sync with .github/prompts/ via `uv run --no-sync invoke claude.sync`
@@ -70,4 +73,7 @@ uv run --no-sync invoke repo.pr_notes_save # Save PR notes to tmp/pull_requests/
 uv run --no-sync invoke repo.pr_create     # Open a GitHub PR via gh (--title=... --content=...)
 uv run --no-sync invoke claude.sync # Sync .claude/commands/ from .github/prompts/ (additive; --force to overwrite)
 uv run --no-sync invoke skeleton.locate_source # Resolve the shared skeleton repo's path for /sync-setup
+uv run --no-sync invoke versioning.libs    # Check pyproject.toml deps vs. latest releases, update version locks
+uv run --no-sync invoke versioning.all     # Run every version check (currently just libs)
+uv run --no-sync invoke uv.upgrade  # Install the versions currently locked in pyproject.toml (uv sync)
 ```
