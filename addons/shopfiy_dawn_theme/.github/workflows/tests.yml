@@ -1,0 +1,23 @@
+---
+name: Tests
+run-name: "Tests (${{ github.head_ref || github.ref_name }})"
+
+on:
+  pull_request:
+    branches:
+      - development  # Trigger on pull requests targeting the development branch
+
+jobs:
+  theme_lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Install Shopify CLI
+        run: npm install -g @shopify/cli @shopify/theme
+
+      - name: Run theme-check
+        run: shopify theme check

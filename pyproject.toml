@@ -27,6 +27,7 @@ repository = "https://github.com/LevonBecker/repo_setup_python"
 [tool.ruff]
 line-length = 120
 target-version = "py314"
+extend-exclude = ["addons"]
 
 [tool.ruff.lint]
 select = ["PL", "E", "W", "F", "I", "B", "A", "C4", "N", "UP", "T10", "EXE", "COM819", "C", "Q"]
@@ -65,6 +66,7 @@ ignore-paths = [
   "^.ruff_cache/.*$",
   "^tmp/.*$",
   ".*__pycache__.*$",
+  "^addons/.*$",
 ]
 
 [tool.pylint.format]

@@ -3,9 +3,9 @@ name: Tests
 run-name: "Tests (${{ github.head_ref || github.ref_name }})"
 
 on:
-  pull_request:
+  push:
     branches:
-      - development  # Trigger on pull requests targeting the development branch
+      - main  # Trigger on pushes to the main branch
 
 jobs:
   # https://github.com/rhysd/actionlint
@@ -73,20 +73,6 @@ jobs:
         run: |
           uv run --no-sync invoke debug.env
           uv run --no-sync invoke tests.rufflint
-
-  theme_lint:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v7
-
-      - name: Install Shopify CLI
-        run: npm install -g @shopify/cli @shopify/theme
-
-      - name: Run theme-check
-        run: shopify theme check
 
   yaml_lint:
     runs-on: ubuntu-latest

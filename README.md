@@ -1,4 +1,6 @@
 # Repo Setup (Python)
+[![Tests](https://github.com/LevonBecker/repo_setup_python/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/LevonBecker/repo_setup_python/actions/workflows/tests.yml)
+
 Skeleton setup for a repository that uses Python invoke tasks, reusable modules, uv for
 environment/dependency management, and AI Copilot prompts and instructions. Drop this into any
 project to get a consistent git workflow, linting, and session logging out of the box.
