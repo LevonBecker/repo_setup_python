@@ -20,8 +20,19 @@ can bypass branch protection, without a paid seat or a long-lived PAT.
 2. Scroll to **Private keys** → **Generate a private key** (downloads a `.pem` file)
 
 ## 3. Install the App on the Repo
-1. App page → **Install App** → **Install** next to `fireballenterprise`
-2. Choose **Only select repositories** → `shopify_dawn_theme` → **Install**
+Creating the app only registers it — it has no repo access until installed.
+1. Open the app's settings page:
+   `https://github.com/organizations/fireballenterprise/settings/apps/fireball-actions-bot`
+   (or org **Settings** → **Developer settings** → **GitHub Apps** → **Edit** next to the app)
+2. In the left sidebar, click **Install App**
+3. Click **Install** next to the `fireballenterprise` org
+4. On the install screen, select **Only select repositories**
+5. Open the **Select repositories** dropdown and pick `shopify_dawn_theme`
+6. Click **Install** — GitHub shows the app's permissions (Contents: Read and write); confirm
+7. Verify: repo **Settings** → **GitHub Apps** (under Integrations) lists `fireball-actions-bot`
+
+To add/remove repos later: org **Settings** → **Third-party Access** → **GitHub Apps** →
+**Configure** next to the app.
 
 ## 4. Let the Bot Bypass Branch Protection
 In `shopify_dawn_theme` → **Settings** → **Branches** → edit the `development` rule:

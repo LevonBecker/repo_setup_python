@@ -11,15 +11,25 @@ jobs:
     runs-on: ubuntu-latest
     concurrency: version-bump-development  # serialize VERSION changes against deploy.yml's bumps
     permissions:
-      contents: write  # repo default GITHUB_TOKEN permission is read-only; this job needs to push a branch
-      pull-requests: write  # 'development' requires changes via PR (0 required reviews) — no direct push allowed
-      actions: write  # renaming the run needs write too
+      contents: read  # pushes go through the bot token, not GITHUB_TOKEN
     outputs:
       version: ${{ steps.bump.outputs.version }}
     steps:
+      # GITHUB_TOKEN may not push to development (PR-required branch); the bot app
+      # bypasses that protection. See docs/howtos/create_actions_bot.md
+      - name: Generate bot token
+        id: bot-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.BOT_APP_ID }}
+          private-key: ${{ secrets.BOT_PRIVATE_KEY }}
+
       - uses: actions/checkout@v7
         with:
           ref: development
+          # persist the bot token for git auth — checkout's default GITHUB_TOKEN
+          # extraheader overrides any token embedded in a push URL
+          token: ${{ steps.bot-token.outputs.token }}
 
       - name: Setup uv
         uses: astral-sh/setup-uv@v8.3.2
@@ -37,24 +47,16 @@ jobs:
           uv run --no-sync invoke version.bump_release
           new_version="$(cat VERSION)"
           echo "version=$new_version" >> "$GITHUB_OUTPUT"
-          branch="chore/release-version-${{ github.run_id }}"
-          git checkout -b "$branch"
           git add VERSION
-          git commit -m "chore: release v$new_version"
-          git push origin "$branch"
-          gh pr create --repo "${{ github.repository }}" --base development --head "$branch" \
-            --title "chore: release v$new_version" \
-            --body "Automated VERSION finalize for release v$new_version."
-          gh pr merge --repo "${{ github.repository }}" "$branch" --squash --delete-branch
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # [skip ci]: bot-token pushes DO trigger workflows (unlike GITHUB_TOKEN),
+          # so without it this push to development would trigger a dev Deploy
+          git commit -m "chore: release v$new_version [skip ci]"
+          git push origin HEAD:development
 
-      - name: Set run name
-        run: |
-          gh api --method PATCH "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            -f display_title="Release (v${{ steps.bump.outputs.version }})"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # runs can't be renamed after the fact (no such API endpoint, and run-name is
+      # fixed at trigger time — before the bump); surface the version in the summary
+      - name: Report version
+        run: echo "### Releasing v${{ steps.bump.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
 
   # 🔀 Promote development → main
   promote:
