@@ -92,7 +92,7 @@ jobs:
     secrets: inherit
 
   # 🏷️ Create GitHub Release
-  tag:
+  publish_release:
     needs: [version, deploy]
     runs-on: ubuntu-latest
     permissions:
