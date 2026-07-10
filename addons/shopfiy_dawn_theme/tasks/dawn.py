@@ -14,9 +14,9 @@ def list_versions(_context):  # noqa: A001  # pylint: disable=redefined-builtin
 
 
 @task
-def upgrade(_context, version=None):
-    """Create a feature branch off dawn_vanilla, rebased onto development, for manual review"""
-    dawn_upgrade.main(version=version)
+def upgrade(_context):
+    """Merge the upgraded dawn_vanilla into a feature branch for manual conflict resolution"""
+    dawn_upgrade.main()
 
 
 @task(name="version")

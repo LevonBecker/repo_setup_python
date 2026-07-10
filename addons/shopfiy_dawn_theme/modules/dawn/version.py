@@ -20,20 +20,25 @@ from ..common.properties import get_repo_root
 from ..common.utils import error
 
 
-def _theme_version() -> str:
-    """Return theme_info.theme_version from config/settings_schema.json."""
-    path = get_repo_root() / "config" / "settings_schema.json"
-    if not path.is_file():
-        error(f"settings_schema.json not found at {path}")
-
-    schema = json.loads(path.read_text(encoding="utf-8"))
+def parse_theme_version(schema_json: str) -> str:
+    """Return theme_info.theme_version from settings_schema.json contents (public: upgrade.py reuses it)."""
+    schema = json.loads(schema_json)
     for block in schema:
         if isinstance(block, dict) and block.get("name") == "theme_info":
             version = block.get("theme_version")
             if version:
                 return version
             break
-    error("theme_info.theme_version not found in config/settings_schema.json")
+    error("theme_info.theme_version not found in settings_schema.json contents")
+
+
+def _theme_version() -> str:
+    """Return theme_info.theme_version from config/settings_schema.json."""
+    path = get_repo_root() / "config" / "settings_schema.json"
+    if not path.is_file():
+        error(f"settings_schema.json not found at {path}")
+
+    return parse_theme_version(path.read_text(encoding="utf-8"))
 
 
 def main() -> None:

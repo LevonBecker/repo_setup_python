@@ -25,7 +25,7 @@ UPSTREAM_URL = "https://github.com/Shopify/dawn.git"
 _TAG_RE = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)$")
 
 
-def fetch_tags() -> list[str]:
+def _fetch_tags() -> list[str]:
     """Return every semver tag published on upstream Shopify/dawn (git ls-remote — no clone/auth needed)."""
     result = subprocess.run(
         ["git", "ls-remote", "--tags", "--refs", UPSTREAM_URL],
@@ -44,7 +44,7 @@ def fetch_tags() -> list[str]:
     return tags
 
 
-def sort_key(tag: str) -> tuple[int, int, int]:
+def _sort_key(tag: str) -> tuple[int, int, int]:
     """Numeric sort key for a "vX.Y.Z" tag, so v10.0.0 sorts after v9.0.0."""
     match = _TAG_RE.match(tag)
     return (int(match.group(1)), int(match.group(2)), int(match.group(3)))
@@ -64,11 +64,11 @@ def _current_dawn_vanilla_tag(repo_root: Path) -> str | None:
 def main() -> None:
     """List every version tag published on upstream Shopify/dawn, latest highlighted."""
     info("Fetching tags from upstream Shopify/dawn...")
-    tags = fetch_tags()
+    tags = _fetch_tags()
     if not tags:
         error("No version tags found on upstream Shopify/dawn.")
 
-    tags.sort(key=sort_key)
+    tags.sort(key=_sort_key)
     latest = tags[-1]
     current = _current_dawn_vanilla_tag(get_repo_root())
 
@@ -88,7 +88,7 @@ def main() -> None:
     else:
         click.echo(f"dawn_vanilla is at {current or 'unknown'}; latest upstream is {latest}.")
         click.echo(f'Run the "Upgrade" GitHub Actions workflow with version="{latest}" to sync,')
-        click.echo("then `uv run --no-sync invoke dawn.upgrade` to bring it onto a review branch.")
+        click.echo("then `uv run --no-sync invoke dawn.upgrade` to merge it into a feature branch.")
 
 
 if __name__ == "__main__":

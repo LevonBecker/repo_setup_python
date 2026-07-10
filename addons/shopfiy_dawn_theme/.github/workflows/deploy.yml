@@ -26,7 +26,7 @@ on:
 
 jobs:
   # 🔢 Bump VERSION build number (dev deploys only — release.yml owns VERSION for prd)
-  bump-version:
+  build_version:
     if: ${{ (inputs.env || 'dev') == 'dev' }}
     runs-on: ubuntu-latest
     concurrency: version-bump-development  # serialize VERSION bumps — no racing build numbers
@@ -63,7 +63,7 @@ jobs:
           git config user.email "actions@github.com"
           uv run --no-sync invoke version.bump_build
           new_version="$(cat VERSION)"
-          git add VERSION
+          git add VERSION snippets/fireball-version.liquid
           # [skip ci]: bot-token pushes DO trigger workflows (unlike GITHUB_TOKEN),
           # so without it this push to development would re-run Deploy forever
           git commit -m "chore: bump VERSION to $new_version [skip ci]"
@@ -71,8 +71,8 @@ jobs:
 
   # 🚀 Deploy job
   deploy:
-    needs: bump-version
-    if: ${{ !cancelled() && !failure() }}  # run even when bump-version is skipped (prd), not on its failure
+    needs: build_version
+    if: ${{ !cancelled() && !failure() }}  # run even when build_version is skipped (prd), not on its failure
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -81,8 +81,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          # dev already has bump-version's push; prd (called from release.yml) reads main,
-          # already finalized by release.yml's version job + promote.yml
+          # dev already has build_version's push; prd (called from release.yml) reads main,
+          # already finalized by release.yml's version + promote jobs
           ref: ${{ env.DEPLOY_ENV == 'dev' && 'development' || 'main' }}
 
       # runs can't be renamed after the fact (no such API endpoint, and run-name is

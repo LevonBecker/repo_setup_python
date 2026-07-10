@@ -47,7 +47,7 @@ jobs:
           uv run --no-sync invoke version.bump_release
           new_version="$(cat VERSION)"
           echo "version=$new_version" >> "$GITHUB_OUTPUT"
-          git add VERSION
+          git add VERSION snippets/fireball-version.liquid
           # [skip ci]: bot-token pushes DO trigger workflows (unlike GITHUB_TOKEN),
           # so without it this push to development would trigger a dev Deploy
           git commit -m "chore: release v$new_version [skip ci]"
@@ -58,13 +58,30 @@ jobs:
       - name: Report version
         run: echo "### Releasing v${{ steps.bump.outputs.version }}" >> "$GITHUB_STEP_SUMMARY"
 
-  # 🔀 Promote development → main
+  # 🔀 Promote development → main (Production)
   promote:
     needs: version
-    uses: ./.github/workflows/promote.yml
+    runs-on: ubuntu-latest
     permissions:
-      contents: write  # repo default GITHUB_TOKEN permission is read-only; the called workflow needs to push to main
-    secrets: inherit
+      contents: write  # repo default GITHUB_TOKEN permission is read-only; this job needs to push to main
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: development  # Checkout development branch
+          fetch-depth: 0    # Full history so main/development share a discoverable common ancestor
+
+      # Merge development into main
+      - name: Merge development to main
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git fetch origin main
+          git checkout main
+          # -X theirs: development is the source of truth; on conflict its side wins
+          git merge origin/development --no-ff -X theirs -m "chore: release to production"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # 🚀 Deploy to production
   deploy:
@@ -75,7 +92,7 @@ jobs:
     secrets: inherit
 
   # 🏷️ Create GitHub Release
-  release:
+  tag:
     needs: [version, deploy]
     runs-on: ubuntu-latest
     permissions:

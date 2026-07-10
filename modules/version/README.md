@@ -2,7 +2,7 @@
 
 Bumps the repo's root `VERSION` file (`Major.Minor.Patch[-Build]`) for development deploys, and
 finalizes it for release. Does not commit or push — that's handled by the calling GitHub Actions
-workflow (`deploy.yml`/`release.yml`), same as `promote.yml`/`upgrade.yml`'s inline `git` steps.
+workflow (`deploy.yml`/`release.yml`), same as the promote (`release.yml`) and `upgrade.yml` inline `git` steps.
 
 ## Usage
 
@@ -19,7 +19,8 @@ uv run --no-sync invoke version.bump_release     # release: drop the build suffi
    `1.0.0` -> `1.1.0-001`. A build suffix already present means builds are in progress, so it
    only increments the build number: `1.1.0-001` -> `1.1.0-002`.
 3. `bump_release()` — drops the build suffix: `1.1.0-003` -> `1.1.0`.
-4. Both write the new value back to `VERSION` and return it.
+4. Both write the new value back to `VERSION`, restamp the version comment in
+   `snippets/fireball-version.liquid` (the theme's home-page version stamp), and return it.
 
 ```
 uv run --no-sync invoke version.bump_build
