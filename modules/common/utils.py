@@ -1,4 +1,4 @@
-"""Common utilities for repo_setup_python automation."""
+"""Common utilities for template_python automation."""
 
 import re
 import sys

@@ -1,4 +1,4 @@
-"""Properties management for repo_setup_python."""
+"""Properties management for template_python."""
 
 import os
 from functools import lru_cache
@@ -88,7 +88,7 @@ def get_repo_remote() -> str:
 
 def get_skeleton_local() -> Path:
     """
-    Get the local path to the shared skeleton repo (repo_setup_python), used by /sync-setup.
+    Get the local path to the shared skeleton repo (template_python), used by /sync-setup.
 
     A relative path is resolved against this repo's root.
 
@@ -102,7 +102,7 @@ def get_skeleton_local() -> Path:
 
 def get_skeleton_remote() -> str:
     """
-    Get the skeleton repo's remote (e.g. "github.com/LevonBecker/repo_setup_python").
+    Get the skeleton repo's remote (e.g. "github.com/LevonBecker/template_python").
 
     Returns:
         Remote repository reference, without a URL scheme.

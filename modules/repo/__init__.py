@@ -1,1 +1,1 @@
-"""Git workflow automation for repo_setup_python (pull, push, log, squash, rebase)."""
+"""Git workflow automation for template_python (pull, push, log, squash, rebase)."""

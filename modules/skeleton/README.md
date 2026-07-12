@@ -1,6 +1,6 @@
 # Skeleton Module
 
-Locates the shared skeleton repo (`repo_setup_python`) for `/sync-setup`, the command that pulls
+Locates the shared skeleton repo (`template_python`) for `/sync-setup`, the command that pulls
 tooling updates from this repo into other projects that were bootstrapped from it.
 
 ## Usage

@@ -1,5 +1,5 @@
 # Repo Setup (Python)
-[![Tests](https://github.com/LevonBecker/repo_setup_python/actions/workflows/tests.yml/badge.svg)](https://github.com/LevonBecker/repo_setup_python/actions/workflows/tests.yml)
+[![Tests](https://github.com/LevonBecker/template_python/actions/workflows/tests.yml/badge.svg)](https://github.com/LevonBecker/template_python/actions/workflows/tests.yml)
 
 Skeleton setup for a repository that uses Python invoke tasks, reusable modules, uv for
 environment/dependency management, and AI Copilot prompts and instructions. Drop this into any
@@ -85,7 +85,7 @@ uv run --no-sync invoke uv.upgrade    # Install the versions currently locked in
 | `/pr-notes` | `uv run --no-sync invoke repo.pr_diff` | Draft PR notes vs. base branch; saves to `tmp/pull_requests/` when run standalone |
 | `/pr` | `uv run --no-sync invoke repo.pr_create` | Draft PR notes and open a Pull Request via `gh` (does not push) |
 | `/punch-it-chewy` | — | Push, then draft notes and open a Pull Request |
-| `/sync-setup` | `uv run --no-sync invoke skeleton.locate_source` | Pull shared tooling updates from the repo_setup_python skeleton repo into this project |
+| `/sync-setup` | `uv run --no-sync invoke skeleton.locate_source` | Pull shared tooling updates from the template_python skeleton repo into this project |
 | `/versioning` | `uv run --no-sync invoke versioning.all` | Check pyproject.toml deps and workflow action refs vs. latest releases, update locks (does not install or run) |
 
 ## Modules
@@ -102,7 +102,7 @@ See [modules/README.md](modules/README.md) for full details.
 ## Addons
 Optional, project-specific extensions live under `addons/<name>/` and mirror the root layout
 (`modules/`, `tasks/`, `.github/`, `.claude/`). They are **not** usable from inside
-`repo_setup_python` — they only work once their files are copied into the consuming repo's
+`template_python` — they only work once their files are copied into the consuming repo's
 actual root, merged with what's already there, because they:
 - Import via root-relative paths (e.g. `from modules.dawn import list`)
 - Have `applyTo` instruction globs written for a root-level path (e.g. `modules/dawn/**`)

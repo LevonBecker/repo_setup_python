@@ -1,5 +1,5 @@
 ---
-description: Pull shared tooling updates (modules/, tasks/, .github/, .claude/, config files) from the repo_setup_python skeleton repo into this project, asking about anything ambiguous or conflicting.
+description: Pull shared tooling updates (modules/, tasks/, .github/, .claude/, config files) from the template_python skeleton repo into this project, asking about anything ambiguous or conflicting.
 subtask: false
 agent: general
 slash_command: /sync-setup

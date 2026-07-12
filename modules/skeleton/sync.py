@@ -1,5 +1,5 @@
 """
-Resolve the local path to the shared skeleton repo (repo_setup_python) for /sync-setup.
+Resolve the local path to the shared skeleton repo (template_python) for /sync-setup.
 
 Prints the resolved path on its own line, prefixed `SKELETON_PATH=`, so the calling prompt can
 parse it out of any other status output.

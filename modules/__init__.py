@@ -1,1 +1,1 @@
-"""Reusable modules for repo_setup_python automation."""
+"""Reusable modules for template_python automation."""

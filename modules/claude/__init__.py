@@ -1,1 +1,1 @@
-"""Keeps .claude/commands/ in sync with .github/prompts/ for repo_setup_python."""
+"""Keeps .claude/commands/ in sync with .github/prompts/ for template_python."""

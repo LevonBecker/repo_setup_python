@@ -13,7 +13,7 @@ Modules provide reusable Python logic consumed by invoke tasks, prompts, and scr
 | `modules/common/` | Helpers tightly coupled to invoke tasks (`cli`, `properties`, `utils`) |
 | `modules/repo/` | Git/PR workflow logic (pull, push, log, squash, rebase, pr) |
 | `modules/claude/` | Syncs `.claude/commands/` from `.github/prompts/` source of truth |
-| `modules/skeleton/` | Locates the shared skeleton repo (repo_setup_python) for `/sync-setup` |
+| `modules/skeleton/` | Locates the shared skeleton repo (template_python) for `/sync-setup` |
 | `modules/versioning/` | Checks `pyproject.toml` deps and workflow action refs against latest releases, updates locks |
 
 ## Module Conventions

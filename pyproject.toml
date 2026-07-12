@@ -21,8 +21,8 @@ dependencies = [
 packages = []
 
 [project.urls]
-homepage = "https://github.com/LevonBecker/repo_setup_python"
-repository = "https://github.com/LevonBecker/repo_setup_python"
+homepage = "https://github.com/LevonBecker/template_python"
+repository = "https://github.com/LevonBecker/template_python"
 
 [tool.ruff]
 line-length = 120

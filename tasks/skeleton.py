@@ -1,4 +1,4 @@
-"""Skeleton sync task — locates the shared repo_setup_python skeleton for /sync-setup."""
+"""Skeleton sync task — locates the shared template_python skeleton for /sync-setup."""
 
 from invoke import task
 
