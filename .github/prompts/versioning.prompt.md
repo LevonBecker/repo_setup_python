@@ -26,7 +26,7 @@ Show the user the relevant table exactly as printed, then ask whether to apply i
 
 - `pyproject.toml`: this only rewrites version constraints — it does NOT install anything. If the
   user says yes, run `uv run --no-sync invoke ver.libs --yes`, then tell them the locks were
-  updated and that `uv run --no-sync invoke uv.upgrade` will install them (do not run that
+  updated and that `uv run --no-sync invoke uv.upgrade_libs` will install them (do not run that
   yourself — installing is a separate, explicit step).
 - `.github/workflows/`: this only rewrites `@ref` pins in the workflow files — it does NOT run any
   workflow. If the user says yes, run `uv run --no-sync invoke ver.workflows --yes`, then tell

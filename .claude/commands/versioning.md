@@ -6,7 +6,7 @@ slash_command: /versioning
 allowed-tools: Bash(uv run --no-sync *)
 ---
 
-Run `uv run --no-sync invoke versioning.all --dry-run` using the Bash tool. This is read-only and makes
+Run `uv run --no-sync invoke ver.all --dry-run` using the Bash tool. This is read-only and makes
 no changes. If it fails, show the full output to the user and ask how they'd like to proceed — do
 not retry automatically.
 
@@ -19,18 +19,18 @@ already up to date — treat that section as done and move on.
 - Argument is `libs` → only act on the `pyproject.toml` section; ignore the workflows section.
 - Argument is `workflows` → only act on the workflows section; ignore the `pyproject.toml` section.
 - Argument is `all`, or no argument at all → walk through both sections (this matches
-  `uv run --no-sync invoke versioning.all`, which is what the check above already ran).
+  `uv run --no-sync invoke ver.all`, which is what the check above already ran).
 
 ## Applying an update
 
 Show the user the relevant table exactly as printed, then ask whether to apply it.
 
 - `pyproject.toml`: this only rewrites version constraints — it does NOT install anything. If the
-  user says yes, run `uv run --no-sync invoke versioning.libs --yes` using the Bash tool, then tell them
-  the locks were updated and that `uv run --no-sync invoke uv.upgrade` will install them (do not
+  user says yes, run `uv run --no-sync invoke ver.libs --yes` using the Bash tool, then tell them
+  the locks were updated and that `uv run --no-sync invoke uv.upgrade_libs` will install them (do not
   run that yourself — installing is a separate, explicit step).
 - `.github/workflows/`: this only rewrites `@ref` pins in the workflow files — it does NOT run any
-  workflow. If the user says yes, run `uv run --no-sync invoke versioning.workflows --yes` using the Bash
+  workflow. If the user says yes, run `uv run --no-sync invoke ver.workflows --yes` using the Bash
   tool, then tell them the workflow files were updated and suggest reviewing the diff before
   committing.
 
