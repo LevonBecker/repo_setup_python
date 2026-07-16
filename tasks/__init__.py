@@ -15,6 +15,7 @@ from . import (  # noqa: E402  # pylint: disable=wrong-import-position
     debug,
     repo,
     ruff,
+    setup,
     skeleton,
     tests,
     uv,
@@ -29,6 +30,7 @@ namespace.add_collection(claude, name="claude")
 namespace.add_collection(debug, name="debug")
 namespace.add_collection(repo, name="repo")
 namespace.add_collection(ruff, name="ruff")
+namespace.add_collection(setup, name="setup")
 namespace.add_collection(skeleton, name="skeleton")
 namespace.add_collection(tests, name="tests")
 namespace.add_collection(uv, name="uv")

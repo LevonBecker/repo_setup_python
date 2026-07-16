@@ -1,20 +1,19 @@
-"""Detect a PR's base branch, print diff context, save notes, and open the PR via gh."""
+"""Detect a PR's base branch and print commit log + diff context vs. that base."""
 
 from __future__ import annotations
 
 import subprocess
-from datetime import UTC, datetime
 from pathlib import Path
 
 from ..common import cli as click
 from ..common.properties import get_repo_local
-from ..common.utils import error, success
+from ..common.utils import error
 
 _BASE_CANDIDATES = ("development", "develop", "main", "master")
 _DIFF_CHAR_LIMIT = 20_000
 
 
-def _current_branch(repo_path: Path) -> str:
+def current_branch(repo_path: Path) -> str:
     """Return the current checked-out branch name."""
     result = subprocess.run(
         ["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=repo_path, capture_output=True, text=True, check=True
@@ -36,12 +35,10 @@ def _commits_ahead(repo_path: Path, base_ref: str) -> int:
     return int(result.stdout.strip())
 
 
-def _detect_base_branch(repo_path: Path, current_branch: str) -> str:
+def detect_base_branch(repo_path: Path, branch: str) -> str:
     """Detect which base branch (development/main/etc.) the current branch forked from."""
     remotes = _remote_branches(repo_path)
-    candidates = [
-        f"origin/{name}" for name in _BASE_CANDIDATES if f"origin/{name}" in remotes and name != current_branch
-    ]
+    candidates = [f"origin/{name}" for name in _BASE_CANDIDATES if f"origin/{name}" in remotes and name != branch]
     if not candidates:
         error("No base branch found (looked for development, develop, main, master on origin).")
 
@@ -78,12 +75,13 @@ def _diff(repo_path: Path, base_ref: str) -> str:
     result = subprocess.run(
         ["git", "diff", f"{base_ref}...HEAD"], cwd=repo_path, capture_output=True, text=True, check=True
     )
-    diff = result.stdout
-    if len(diff) > _DIFF_CHAR_LIMIT:
-        diff = diff[:_DIFF_CHAR_LIMIT] + "\n... (diff truncated — run `git diff` locally for the full change)"
-    return diff.strip() or "(no changes)"
+    diff_text = result.stdout
+    if len(diff_text) > _DIFF_CHAR_LIMIT:
+        diff_text = diff_text[:_DIFF_CHAR_LIMIT] + "\n... (diff truncated — run `git diff` locally for the full change)"
+    return diff_text.strip() or "(no changes)"
 
 
+@click.command()
 def main() -> None:
     """Print the current branch's commit log and diff vs. its detected base branch."""
     repo_path = get_repo_local()
@@ -91,14 +89,14 @@ def main() -> None:
     click.echo("Fetching remote refs...")
     subprocess.run(["git", "fetch", "--prune"], cwd=repo_path, check=False)
 
-    current_branch = _current_branch(repo_path)
-    base_ref = _detect_base_branch(repo_path, current_branch)
+    branch = current_branch(repo_path)
+    base_ref = detect_base_branch(repo_path, branch)
     base_name = base_ref.removeprefix("origin/")
 
-    click.echo(f"Current branch: {current_branch}")
+    click.echo(f"Current branch: {branch}")
     click.echo(f"Base branch:    {base_name}")
     click.echo()
-    click.echo(f"## Commits ({base_name}..{current_branch})")
+    click.echo(f"## Commits ({base_name}..{branch})")
     click.echo(_commit_log(repo_path, base_ref))
     click.echo()
     click.echo("## Diff Stat")
@@ -108,63 +106,5 @@ def main() -> None:
     click.echo(_diff(repo_path, base_ref))
 
 
-def save_notes(content: str | None = None) -> None:
-    """Save PR notes markdown to tmp/pull_requests/<timestamp>_<branch>.md."""
-    if not content or not content.strip():
-        error("PR notes content cannot be empty")
-
-    repo_path = get_repo_local()
-    branch = _current_branch(repo_path)
-    safe_branch = branch.replace("/", "-")
-
-    out_dir = repo_path / "tmp" / "pull_requests"
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H-%M-%SZ")
-    out_file = out_dir / f"{timestamp}_{safe_branch}.md"
-    out_file.write_text(content.strip() + "\n", encoding="utf-8")
-
-    success(f"Saved PR notes: tmp/pull_requests/{out_file.name}")
-
-
-def create_pr(title: str | None = None, content: str | None = None) -> None:
-    """Open a GitHub PR for the current branch against its detected base branch."""
-    if not title or not title.strip():
-        error("PR title cannot be empty")
-    if not content or not content.strip():
-        error("PR notes content cannot be empty")
-
-    repo_path = get_repo_local()
-    current_branch = _current_branch(repo_path)
-    base_ref = _detect_base_branch(repo_path, current_branch)
-    base_name = base_ref.removeprefix("origin/")
-
-    click.echo(f"Creating PR: {current_branch} -> {base_name}")
-    result = subprocess.run(
-        ["gh", "pr", "create", "--base", base_name, "--head", current_branch, "--title", title, "--body", content],
-        cwd=repo_path,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-    if result.returncode != 0:
-        if "already exists" in result.stderr.lower():
-            existing = subprocess.run(
-                ["gh", "pr", "view", "--json", "url", "-q", ".url"],
-                cwd=repo_path,
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-            if existing.returncode == 0 and existing.stdout.strip():
-                success(f"PR already exists: {existing.stdout.strip()}")
-                return
-        error(f"gh pr create failed:\n{result.stderr}")
-
-    success("PR created!")
-    click.echo(result.stdout.strip())
-
-
 if __name__ == "__main__":
-    main()
+    main()  # pylint: disable=no-value-for-parameter

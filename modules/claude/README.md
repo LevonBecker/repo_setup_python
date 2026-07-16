@@ -1,38 +1,94 @@
 # Claude Module
 
-Keeps `.claude/commands/` in sync with `.github/prompts/*.prompt.md`, the source of truth for all
-slash commands in this repo (see [prompts.instructions.md](../../.github/instructions/prompts.instructions.md)).
+Wrapper for the Claude Code CLI, allowing use of your Pro/Max subscription through OpenCode.
+
+## Overview
+
+This module routes `/claude` commands directly to the Claude Code CLI (`claude`). Since Claude Code supports OAuth authentication with Pro/Max accounts, you can use your subscription directly without needing an API key.
+
+## Requirements
+
+- Claude Code CLI installed: `npm install -g @anthropic-ai/claude-code`
+- Claude Pro or Max subscription (for OAuth access)
 
 ## Usage
 
-```sh
-uv run --no-sync invoke claude.sync          # additive only — writes commands that don't exist yet
-uv run --no-sync invoke claude.sync --force  # overwrite all, including hand-crafted commands
+### Slash Command
+
+```
+/claude [arguments...]
 ```
 
-Running `uv run --no-sync python -m modules.claude.sync` directly is always additive-only — `--force` is only
-wired up through the `claude.sync` invoke task.
+### CLI (Direct)
 
-## What It Does
+```bash
+uv run --no-sync python -m modules.claude.route [arguments...]
+```
 
-For each `.github/prompts/*.prompt.md` file, writes a matching `.claude/commands/<slug>.md` with
-a minimal `description` header. Existing files are left untouched unless `--force` is passed, since
-hand-crafted commands often carry extra frontmatter (`allowed-tools`, `argument-hint`, etc.) that a
-plain sync would otherwise clobber.
+## Examples
 
-The command bodies are also expected to diverge intentionally: `.github/prompts/*.prompt.md` uses
-`` !`command` `` to inject shell output for Copilot, but in Claude Code that syntax runs as a
-harness-level preprocessing step — a non-zero exit hard-aborts the whole command before the model
-ever sees the output. `.claude/commands/*.md` bodies instead tell Claude to run the command via the
-Bash tool as plain prose, so a failure surfaces as normal tool output the model can explain or react
-to instead of a silent abort. Keep this divergence when hand-editing or re-syncing commands.
+### Check Version
+
+```
+/claude --version
+```
+
+### Run a Prompt
+
+```
+/claude "Explain this function"
+```
+
+### Interactive Mode
+
+```
+/claude
+```
+
+### Specify Model
+
+```
+/claude --model opus "your prompt here"
+```
+
+### With Options
+
+```bash
+# Allow Claude to execute commands
+/claude --dangerously-skip-permissions "run npm test"
+
+# Use specific model
+/claude --model sonnet "refactor this code"
+
+# Resume a previous session
+/claude --resume "continue where we left off"
+```
+
+## Common Options
+
+| Option | Description |
+|--------|-------------|
+| `--model <model>` | Select model: opus, sonnet, haiku |
+| `--resume` | Resume a previous session |
+| `--dangerously-skip-permissions` | Skip permission prompts (use carefully) |
+| `--max-tokens <n>` | Maximum output tokens |
+| `--no-input` | Exit after completing request (non-interactive) |
 
 ## Architecture
 
 ```
-uv run --no-sync invoke claude.sync [--force]
+User → /claude [args]
   ↓
-modules/claude/sync.py
+.opencode/command/claude.md
   ↓
-.github/prompts/*.prompt.md  →  .claude/commands/*.md
+modules/claude/route.py
+  ↓
+claude CLI (system PATH)
 ```
+
+## Notes
+
+- This passes all arguments directly to the `claude` CLI
+- Claude Code handles OAuth authentication automatically
+- Your Pro/Max subscription limits still apply
+- See `claude --help` for full CLI options

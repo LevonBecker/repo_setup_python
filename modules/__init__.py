@@ -1,1 +1,1 @@
-"""Reusable modules for template_python automation."""
+"""AI Research automation modules."""
