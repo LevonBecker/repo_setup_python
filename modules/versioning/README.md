@@ -36,10 +36,9 @@ above.
   SHAs, branch refs, and full semver pins are left alone
 - `upgrade.py` — install/sync helpers used by `/upgrade`
 - `project.py` — bumps the root `VERSION` file (`Major.Minor.Patch[-Build]`) for development
-  deploys, and finalizes it for release; also restamps the version comment in
-  `snippets/fireball-version.liquid`. Does not commit or push — that's handled by the calling
-  GitHub Actions workflow (`deploy.yml`/`release.yml`). See
-  `.github/instructions/version.instructions.md` for the full scheme and workflow relationship.
+  builds, and finalizes it for release. Does not commit, push, or trigger any workflow — this repo
+  has no `deploy.yml`/`release.yml` of its own. See
+  `.github/instructions/version.instructions.md` for the full scheme.
 
 `libs.py`, `python.py`, `workflows.py`, and `project.py` only edit config files — review the diff
 before committing.

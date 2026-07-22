@@ -19,18 +19,19 @@ modules/
   template/       # pull.py, push.py, resolve.py, route.py, scope.py — sync shared tooling with the parent template repo for /template
   versioning/     # libs.py, python.py, workflows.py, upgrade.py, project.py — check pyproject.toml deps & workflow action refs vs. latest releases, bump the repo's VERSION file
 tasks/
-  __init__.py     # Wires the invoke Collection (claude, repo, ruff, template, tests, uv, versioning, fix, test)
+  __init__.py     # Wires the invoke Collection (claude, repo, ruff, template, tests, upgrade, uv, versioning, fix, test, update)
   claude.py       # claude.sync
   repo.py         # repo.pull, repo.push, repo.log, repo.squash, repo.rebase, repo.pr_diff, repo.pr_notes_save, repo.pr_create
   ruff.py         # ruff.fix, ruff.format
-  template.py     # template.pull
+  template.py     # template.pull, template.push_diff, template.push_apply, template.push_create_pr
   tests.py        # tests.actionlint, tests.pylint, tests.rufflint, tests.yamllint
-  uv.py           # uv.upgrade
-  versioning.py   # ver.libs, ver.workflows, ver.all, ver.project_bump_build, ver.project_bump_release
-  combos.py       # Top-level aliases: fix, test
+  upgrade.py      # upgrade (default), upgrade.python, upgrade.libs, upgrade.sync — installs; run ver.update first
+  uv.py           # uv.upgrade_bin, uv.upgrade_libs
+  versioning.py   # ver.libs, ver.python, ver.workflows, ver.all, ver.update, ver.upgrade, ver.project_bump_build, ver.project_bump_release
+  combos.py       # Top-level aliases: fix, test, update
 .github/
   instructions/   # Copilot instruction files
-  prompts/        # Copilot prompt files (/push, /pull, /squash, /rebase, /fix, /test, /pr-notes, /pr, /punch-it-chewy, /template, /versioning) — source of truth for slash commands
+  prompts/        # Copilot prompt files (/push, /pull, /squash, /rebase, /fix, /test, /pr-notes, /pr, /punch-it-chewy, /template, /update, /upgrade, /repo, /claude, /setup) — source of truth for slash commands
   workflows/      # tests.yml (reusable), feature_branches.yml, protected_branches.yml
 .claude/
   commands/       # Claude Code slash commands, kept in sync with .github/prompts/ via `uv run --no-sync invoke claude.sync`
@@ -83,8 +84,14 @@ uv run --no-sync invoke template.push_diff      # Diff this repo's scoped toolin
 uv run --no-sync invoke template.push_apply     # Copy approved files/deletions to a new branch upstream and push it
 uv run --no-sync invoke template.push_create_pr # Open a PR for that branch against the parent template repo
 uv run --no-sync invoke ver.libs    # Check pyproject.toml deps vs. latest releases, update version locks
+uv run --no-sync invoke ver.python  # Check the pinned Python version vs. latest stable, update config refs
 uv run --no-sync invoke ver.all     # Run every version check (libs, workflows)
-uv run --no-sync invoke ver.project_bump_build   # Dev deploy: new minor's first VERSION build, or next build number
+uv run --no-sync invoke ver.update  # Run every version check (libs, python, workflows) — same as top-level `update`
+uv run --no-sync invoke ver.project_bump_build   # Dev build: new minor's first VERSION build, or next build number
 uv run --no-sync invoke ver.project_bump_release # Release: drop the VERSION build suffix
-uv run --no-sync invoke uv.upgrade  # Install the versions currently locked in pyproject.toml (uv sync)
+uv run --no-sync invoke ver.upgrade    # Install the Python/library upgrades reviewed via ver.update — same as top-level `upgrade`
+uv run --no-sync invoke upgrade.python # Upgrade Python only (installs, rebuilds .venv)
+uv run --no-sync invoke upgrade.libs   # Upgrade libraries only (uv sync --upgrade)
+uv run --no-sync invoke upgrade.sync   # Sync dependencies without checking for updates first
+uv run --no-sync invoke uv.upgrade_libs # Install the versions currently locked in pyproject.toml (uv sync)
 ```

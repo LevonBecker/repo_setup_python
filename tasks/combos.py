@@ -1,6 +1,6 @@
 from invoke import task
 
-from . import ruff, tests
+from . import ruff, tests, versioning
 
 
 @task
@@ -17,3 +17,9 @@ def test(context):
     tests.pylint(context)
     tests.rufflint(context)
     tests.yamllint(context)
+
+
+@task
+def update(context, dry_run=False, yes=False):
+    """Run every version check (libs, python, workflows) — top-level alias for ver.update"""
+    versioning.update(context, dry_run=dry_run, yes=yes)
