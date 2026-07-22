@@ -6,14 +6,13 @@ renaming it, or forking it to a new remote. Run via `inv setup.properties`
 (called automatically by setup.sh, but you can re-run it directly whenever
 the repo's location or remote changes).
 
-properties.yml is committed in this repo (it also holds business-specific
-config like Fireball COGS rates and financials paths), so unlike a fresh
-fork's gitignored copy, this only ever rewrites specific keys in place. Only
-repo.local, repo.remote, screenshots.location, and template.* are ever
-touched, by targeting those specific keys (not a placeholder token — a token
-would only be replaceable once, breaking re-runs after a move/rename). Every
-other line, including comments and the business-specific sections, is left
-exactly as-is.
+properties.yml is gitignored (it holds machine-specific local paths) and
+created fresh from the built-in template below on first run. Every run after
+that only rewrites specific keys in place — repo.local, repo.remote,
+screenshots.location, and template.* — by targeting those specific keys (not
+a placeholder token — a token would only be replaceable once, breaking
+re-runs after a move/rename). Every other line, including comments, is left
+exactly as-is, so hand edits survive.
 
 template.* (this repo's parent template repo, used by /template) is
 auto-detected from GitHub's generated-from link when possible, with an
@@ -33,7 +32,7 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 _PROPERTIES_FILE = _REPO_ROOT / "properties.yml"
 
 _TEMPLATE = """---
-# AI Vault Repository Properties
+# Repository Properties
 # Central configuration for all scripts and automation.
 #
 # `inv setup.properties` (run automatically by setup.sh, and safe to re-run any time — e.g. after
@@ -41,14 +40,7 @@ _TEMPLATE = """---
 # template on first run and re-stamps repo.local / repo.remote / screenshots.location on every
 # run. template.* (the parent template repo for /template) is auto-detected from GitHub's
 # generated-from link (or prompted for) while it still holds the placeholder — edit by hand any
-# time. icloud.path is never auto-detected.
-
-# Optional — off by default. Only needed if you sync this repo to an iCloud
-# Obsidian vault for mobile access (see docs/). Set enabled: true and fill in
-# path to turn on iCloud sync in /push and /pull.
-icloud:
-  enabled: false
-  path: "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/<your-vault-name>/"
+# time.
 
 repo:
   local: "$HOME/path/to/this/repo"
@@ -170,17 +162,6 @@ def _replace_scalar(lines: list[str], section: str, key: str, value: str, *, quo
     return False
 
 
-def _prompt_icloud_enabled(lines: list[str]) -> None:
-    """Ask (interactively) whether to turn on iCloud sync for a freshly created properties.yml."""
-    enabled = cli.confirm(
-        "Enable iCloud sync for /push and /pull? (most people don't need this — off by default)",
-        default=False,
-    )
-    _replace_scalar(lines, "icloud", "enabled", "true" if enabled else "false", quote=False)
-    if enabled:
-        info("iCloud sync enabled — edit icloud.path in properties.yml to your Obsidian vault path")
-
-
 def _stamp_template_parent(lines: list[str], repo_local: str, repo_remote: str | None) -> None:
     """Fill in template.* (the /template parent) while it still holds the placeholder.
 
@@ -225,8 +206,6 @@ def main() -> None:
         _replace_scalar(lines, "repo", "remote", repo_remote)
     _replace_scalar(lines, "screenshots", "location", f"{repo_local}/screenshots")
     _stamp_template_parent(lines, repo_local, repo_remote)
-    if just_created:
-        _prompt_icloud_enabled(lines)
     _PROPERTIES_FILE.write_text("".join(lines))
 
     success(f"properties.yml: repo.local = {repo_local}")

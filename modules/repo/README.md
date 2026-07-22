@@ -1,19 +1,18 @@
 # Repo Manager Agent
 
-The repo module handles repository-level operations including git synchronization, iCloud backup, and cleanup tasks.
+The repo module handles repository-level operations including git synchronization and cleanup tasks.
 
 ## Features
 
-- **Repository Push/Pull**: Full git operations and iCloud synchronization
+- **Repository Push/Pull**: Full git operations
 - **Screenshot Cleanup**: Remove old screenshots from centralized repo screenshots/ folder
-- **Cross-Device Sync**: Keep work synchronized via git and iCloud Obsidian
 - **Automated Commits**: Timestamp-based commit messages
 - **Error Handling**: Graceful handling of push/pull failures
 
 ## Commands
 
 ### `/repo push` (alias: `/push`)
-Push changes to git remote and iCloud Obsidian folder from any location.
+Push changes to git remote from any location.
 
 **Workflow:**
 1. **Navigate to repository root** - Automatically changes to repo directory
@@ -21,89 +20,48 @@ Push changes to git remote and iCloud Obsidian folder from any location.
 3. **Check for local changes** - Identify uncommitted work with `git status`
 4. **Stage all changes** - Run `git add .` if changes detected
 5. **Commit with timestamp** - Create commit: `Push repository: Automated commit YYYY-MM-DD HH:MM:SS`
-6. **Push to remote** - Upload changes to GitHub (continues on failure)
-7. **Push to iCloud** - Copy content to iCloud Obsidian folder using rsync
-8. **Clean up** - Remove any .git folder from iCloud copy
-9. **Confirm completion** - Show status summary
+6. **Push to remote** - Upload changes to GitHub
+7. **Confirm completion** - Show status summary
 
 **Features:**
 - ✅ Works from any directory in the repository
 - ✅ Automatic git operations (pull, commit, push)
-- ✅ iCloud Obsidian folder synchronization (~700KB)
 - ✅ Timestamp-based commit messages
 - ✅ Error handling for each push step
-- ✅ Cross-device content availability
-- ✅ Excludes hidden files from iCloud push
-
-**Rsync Exclusions:**
-```
-.git
-.gitignore
-.gitattributes
-.DS_Store
-.claude
-.opencode
-.*  (all hidden files)
-```
 
 **When to Use:**
-- **End of research session** - Push all work before closing
-- **After making changes** - Save work to remote and iCloud
-- **Before switching devices** - Ensure content is available everywhere
+- **End of session** - Push all work before closing
+- **After making changes** - Save work to remote
 - **Regular backups** - Keep work synchronized and safe
 - **After major changes** - Backup important work immediately
 
 **Error Handling:**
 - Git pull failure: Stops execution
-- Git push failure: Continues with iCloud push (shows warning)
-- iCloud push failure: Stops execution with error
+- Git push failure: Stops execution with error
 
 **Module:** `modules.repo.push` (via `/repo push`)
 
 ### `/repo pull` (alias: `/pull`)
-Pull updates from git remote and iCloud Obsidian folder to local repository.
+Pull updates from git remote from any location.
 
 **Workflow:**
-1. **Check working directory** - Ensures no uncommitted changes (blocks if dirty)
-2. **Force pull active_topic.yml** - Ensures active topic syncs from git remote (ignores local timestamp)
-3. **Git pull** - Fetch and merge latest changes from remote
-4. **Pull from iCloud** - Copy `topics/` directory from iCloud Obsidian folder to local using rsync
-   - Syncs entire `topics/` directory recursively
-   - Includes all subdirectories: `chats/`, `docs/`, etc.
-   - Includes all file types: `.md`, `.csv`, `.pdf`, images, etc.
-5. **Show changes** - Display what changed from iCloud (git status)
-6. **Manual review** - User reviews and commits iCloud changes if needed
+1. **Check working directory** - Stash local changes if the working tree is dirty
+2. **Git pull** - Fetch and merge latest changes from remote (rebase, to handle diverged history)
+3. **Restore stash** - Restore stashed changes, if any were made
 
 **Features:**
-- ✅ Safe operation (requires clean working directory)
-- ✅ Forces `active_topic.yml` from remote (ensures topic sync across devices)
-- ✅ Syncs only `topics/` directory from iCloud (not code/config files)
-- ✅ Supports all file types in topics (not just markdown)
-- ✅ No auto-commit (manual review required)
-- ✅ Git + iCloud updates in one command
-- ✅ Clear reporting of changes
-
-**iCloud Sync Scope:**
-- ✅ `topics/` - Entire directory recursively
-  - `topics/help/mac/shapr3d/chats/*.md`
-  - `topics/help/mac/shapr3d/docs/*.md`
-  - `topics/shopping/electronics/docs/*.csv`
-  - `topics/fireball/accounting/bookkeeping/docs/**/*`
-- ❌ Root-level files (code, configs, scripts)
-- ❌ Python modules
-- ❌ Git files
+- ✅ Works from any directory in the repository
+- ✅ Stashes and restores local changes automatically around the pull
+- ✅ Rebases onto latest remote history instead of merge-committing
 
 **When to Use:**
-- **Start of research session** - Get latest from git and iCloud
+- **Start of session** - Get latest from git remote
 - **After making changes on another device** - Pull updates to local
 - **Before starting work** - Ensure you have latest version
-- **Cross-device workflow** - Sync active topic and content between computers
 
 **Error Handling:**
-- Uncommitted changes: Blocks operation, asks to commit/stash first
-- Git pull failure: Stops execution
-- iCloud path missing: Warning shown, continues with git-only pull
-- Rsync failure: Warning shown, git pull still succeeds
+- Stash failure: Stops execution
+- Git pull failure: Stops execution; restores the stash first if one was made
 
 **Module:** `modules.repo.pull` (via `/repo pull`)
 
@@ -252,50 +210,15 @@ squash, and optionally force-push (`--force-with-lease`).
 
 **Module:** `modules.repo.squash` (via `/squash`)
 
-## Directory Structure
-
-Repository management affects the entire repository:
-```
-template_python/                                  (Git repository)
-├── topics/
-│   ├── mac/
-│   │   └── fusion/
-│   │       ├── conversations/
-│   │       └── docs/
-│   ├── business/
-│   │   └── accounting/
-│   │       ├── conversations/
-│   │       └── docs/
-│   └── legal/
-│       └── past_record/
-│           ├── conversations/
-│           └── docs/
-├── screenshots/                              (cleaned by /repo cleanup, preserves latest.png)
-│   ├── latest.png                           (preserved for AI viewing)
-│   └── Screenshot 2026-01-04...png          (removed by cleanup)
-├── agents/
-│   └── repo/                                (this module)
-├── .git/                                    (synced by repo-sync)
-└── ...
-
-iCloud/Documents/template_python/                (iCloud Obsidian)
-├── topics/                                  (synced by repo-sync)
-├── screenshots/                             (synced by repo-sync)
-├── agents/                                  (synced by repo-sync)
-└── ...                                      (no .git or hidden files)
-```
-
 ## Git Integration
 
 ### Push/Pull Operations
 
 **Pull Sequence:**
 ```bash
-git status --porcelain                            # Check for uncommitted changes (block if dirty)
-git checkout origin/main -- active_topic.yml      # Force pull active topic from remote
-git pull                                          # Fetch and merge from remote
-rsync ... iCloud/topics/ → local/topics/          # FROM iCloud TO local (topics/ only)
-git status                                        # Show changes from iCloud
+git status --porcelain  # Check for uncommitted changes, stash if dirty
+git pull --rebase       # Fetch and rebase onto remote
+git stash pop           # Restore stashed changes, if any
 ```
 
 **Push Sequence:**
@@ -305,7 +228,6 @@ git status --porcelain  # Check for changes
 git add .               # Stage all changes
 git commit -m "Push repository: Automated commit 2025-12-11 01:30:45"
 git push                # Upload to remote
-rsync ...               # FROM local TO iCloud
 ```
 
 **Commit Message Format:**
@@ -328,57 +250,10 @@ git status --porcelain | grep "^.D"  # Show deleted files
 
 Files are staged for deletion but not committed. User must run `/push` to commit.
 
-## iCloud Synchronization
-
-### Rsync Configuration
-
-**Push Command (local → iCloud):**
-```bash
-rsync -avz --delete \
-  --exclude='.git' \
-  --exclude='.gitignore' \
-  --exclude='.gitattributes' \
-  --exclude='.DS_Store' \
-  --exclude='.claude' \
-  --exclude='.opencode' \
-  --exclude='.*' \
-  "$REPO_PATH/" "$ICLOUD_PATH"
-```
-
-**Pull Command (iCloud → local):**
-```bash
-# Only sync topics/ directory (includes all subdirectories like docs/, chats/)
-rsync -avz --update \
-  --exclude='.git' \
-  --exclude='.DS_Store' \
-  "$ICLOUD_PATH/topics/" "$REPO_PATH/topics"
-```
-
-**Options:**
-- `-a` - Archive mode (preserves permissions, timestamps)
-- `-v` - Verbose output
-- `-z` - Compress during transfer
-- `--delete` - (Push only) Remove files from iCloud that don't exist in repo
-- `--update` - (Pull only) Only copy files that are newer in source
-
-**Pull Scope:**
-- ✅ `topics/` - All content, all file types, all subdirectories
-- ❌ Root files - Code, configs, scripts not synced from iCloud
-- ❌ Python modules - Only tracked in git, not iCloud
-
-**Benefits:**
-- Content accessible in Obsidian on all devices
-- iOS/iPadOS access via Obsidian mobile app
-- Automatic iCloud backup
-- No git repository overhead in iCloud
-- Clean content-only sync
-- Cross-device topic and active chat synchronization
-
 ## Configuration
 
 Default settings in `config.yml`:
 - `repo_path`: "${repo_local}"
-- `icloud_path`: "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/template_python/"
 
 ## Permissions Required
 
@@ -386,7 +261,6 @@ Default settings in `config.yml`:
 - `git_push` - Push to remote repository
 - `git_commit` - Create commits
 - `git_status` - Check repository status
-- `file_sync` - Rsync to iCloud
 - `file_delete` - Delete screenshot files
 - `directory_access` - Navigate repository directories
 - `bash_execute` - Run shell scripts
@@ -394,29 +268,17 @@ Default settings in `config.yml`:
 ## Dependencies
 
 - `git` - Version control operations
-- `rsync` - iCloud synchronization
 - `find` - Locate screenshot files
 
 ## Best Practices
 
 1. **Pull/Push Regularly**: Run `/repo pull` at start, `/repo push` at end of sessions
 2. **Clean Periodically**: Run `/repo cleanup` when screenshots accumulate
-3. **Commit First**: Use `/chat end` for topic work, `/repo push` for repo-level push
-4. **Check Status**: Review git status before push if concerned about changes
-5. **Verify iCloud**: Occasionally check iCloud Obsidian folder to confirm sync
-6. **Network Aware**: Git operations require network connectivity
-7. **Backup Important**: Always push before major changes or deletions
+3. **Check Status**: Review git status before push if concerned about changes
+4. **Network Aware**: Git operations require network connectivity
+5. **Backup Important**: Always push before major changes or deletions
 
 ## Workflow Examples
-
-**Typical Research Session:**
-```
-1. /topic switch <path>      # Switch to topic (auto-saves current chat)
-2. /chat start <title>       # Begin conversation (auto-ends previous if needed)
-   [work on research]
-3. /chat end                 # Save conversation (commits topic changes and pushes)
-4. /repo push                # Push entire repository to iCloud (if needed)
-```
 
 **Cleanup and Push:**
 ```
@@ -429,7 +291,7 @@ Default settings in `config.yml`:
 Device A:
 1. /repo pull                # Pull latest before starting
    [work on content]
-2. /repo push                # Push changes to iCloud
+2. /repo push                # Push changes to remote
 
 Device B (later):
 1. /repo pull                # Pull changes from Device A
@@ -437,15 +299,13 @@ Device B (later):
 
 ## Related Commands
 
-- `/chat end` - Save conversation and commit topic changes
-- `/repo push` - Push all commits to remote and iCloud (alias: `/push`)
-- `/topic switch <path>` - Switch between topics with auto-save
+- `/repo push` - Push all commits to remote (alias: `/push`)
 - `/repo view_screenshot` - View latest screenshot from central folder (alias: `/ss`)
 
 ## Files
 
-- `push.py` - Push to git and iCloud (used by `/repo push`, alias `/push`)
-- `pull.py` - Pull from git and iCloud (used by `/repo pull`, alias `/pull`)
+- `push.py` - Push to git (used by `/repo push`, alias `/push`)
+- `pull.py` - Pull from git (used by `/repo pull`, alias `/pull`)
 - `cleanup.py` - Screenshot cleanup module (used by `/repo cleanup`)
 - `set_screenshots.py` - macOS screenshot location configuration module (used by `/repo set_screenshots`)
 - `view_screenshot.py` - Copy latest screenshot to latest.png (used by `/repo view_screenshot`, alias `/ss`)
@@ -454,6 +314,6 @@ Device B (later):
 
 ## Command Aliases
 
-- `/push` → Push to git and iCloud
-- `/pull` → Pull from git and iCloud
+- `/push` → Push to git
+- `/pull` → Pull from git
 - `/ss` → View latest screenshot

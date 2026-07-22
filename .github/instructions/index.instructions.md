@@ -11,26 +11,26 @@ Python-based project using [Invoke](https://www.pyinvoke.org/) for task automati
 pyproject.toml    # Dependencies, ruff/pylint config
 invoke.yml        # Invoke config (auto_dash_names: false)
 setup.sh          # Shell-based setup script (uv venv + uv sync)
-properties.yml    # Project configuration (repo path/remote, skeleton path/remote)
+properties.yml    # Project configuration (repo path/remote, template path/remote)
 modules/
   common/         # cli.py, properties.py, utils.py — shared helpers
   repo/           # pull.py, push.py, log.py, squash.py, rebase.py, pr.py — git/PR workflow modules
   claude/         # sync.py — syncs .claude/commands/ from .github/prompts/
-  skeleton/       # sync.py — locates the shared skeleton repo for /sync-setup
-  versioning/     # lib.py, workflows.py — check pyproject.toml deps & workflow action refs vs. latest releases
+  template/       # pull.py, push.py, resolve.py, route.py, scope.py — sync shared tooling with the parent template repo for /template
+  versioning/     # libs.py, python.py, workflows.py, upgrade.py, project.py — check pyproject.toml deps & workflow action refs vs. latest releases, bump the repo's VERSION file
 tasks/
-  __init__.py     # Wires the invoke Collection (claude, repo, ruff, skeleton, tests, uv, versioning, fix, test)
+  __init__.py     # Wires the invoke Collection (claude, repo, ruff, template, tests, uv, versioning, fix, test)
   claude.py       # claude.sync
   repo.py         # repo.pull, repo.push, repo.log, repo.squash, repo.rebase, repo.pr_diff, repo.pr_notes_save, repo.pr_create
   ruff.py         # ruff.fix, ruff.format
-  skeleton.py     # skeleton.locate_source
+  template.py     # template.pull
   tests.py        # tests.actionlint, tests.pylint, tests.rufflint, tests.yamllint
   uv.py           # uv.upgrade
-  versioning.py   # versioning.libs, versioning.workflows, versioning.all
+  versioning.py   # ver.libs, ver.workflows, ver.all, ver.project_bump_build, ver.project_bump_release
   combos.py       # Top-level aliases: fix, test
 .github/
   instructions/   # Copilot instruction files
-  prompts/        # Copilot prompt files (/push, /pull, /squash, /rebase, /fix, /test, /pr-notes, /pr, /punch-it-chewy, /sync-setup, /versioning) — source of truth for slash commands
+  prompts/        # Copilot prompt files (/push, /pull, /squash, /rebase, /fix, /test, /pr-notes, /pr, /punch-it-chewy, /template, /versioning) — source of truth for slash commands
   workflows/      # tests.yml (reusable), feature_branches.yml, protected_branches.yml
 .claude/
   commands/       # Claude Code slash commands, kept in sync with .github/prompts/ via `uv run --no-sync invoke claude.sync`
@@ -78,8 +78,13 @@ uv run --no-sync invoke repo.pr_diff       # Print current branch's commit log/d
 uv run --no-sync invoke repo.pr_notes_save # Save PR notes to tmp/pull_requests/ (--content=...)
 uv run --no-sync invoke repo.pr_create     # Open a GitHub PR via gh (--title=... --content=...)
 uv run --no-sync invoke claude.sync # Sync .claude/commands/ from .github/prompts/ (additive; --force to overwrite)
-uv run --no-sync invoke skeleton.locate_source # Resolve the shared skeleton repo's path for /sync-setup
-uv run --no-sync invoke versioning.libs    # Check pyproject.toml deps vs. latest releases, update version locks
-uv run --no-sync invoke versioning.all     # Run every version check (libs, workflows)
+uv run --no-sync invoke template.pull           # Resolve the parent template repo's local path for /template
+uv run --no-sync invoke template.push_diff      # Diff this repo's scoped tooling against the parent template repo
+uv run --no-sync invoke template.push_apply     # Copy approved files/deletions to a new branch upstream and push it
+uv run --no-sync invoke template.push_create_pr # Open a PR for that branch against the parent template repo
+uv run --no-sync invoke ver.libs    # Check pyproject.toml deps vs. latest releases, update version locks
+uv run --no-sync invoke ver.all     # Run every version check (libs, workflows)
+uv run --no-sync invoke ver.project_bump_build   # Dev deploy: new minor's first VERSION build, or next build number
+uv run --no-sync invoke ver.project_bump_release # Release: drop the VERSION build suffix
 uv run --no-sync invoke uv.upgrade  # Install the versions currently locked in pyproject.toml (uv sync)
 ```

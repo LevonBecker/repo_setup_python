@@ -1,33 +1,34 @@
 ---
-description: "Use when bumping the repo's VERSION file, or editing deploy.yml/release.yml's version jobs. Covers the version.* invoke tasks and the Major.Minor.Patch-Build scheme."
-applyTo: "modules/version/**"
+description: "Use when bumping the repo's VERSION file, or editing deploy.yml/release.yml's version jobs. Covers the ver.project_bump_* invoke tasks and the Major.Minor.Patch-Build scheme."
+applyTo: "modules/versioning/project.py"
 ---
 # Version Instructions
 
 ## Purpose
 The root `VERSION` file tracks this repo's release version — what gets tagged as a GitHub
 Release and deployed to production. This is separate from `pyproject.toml`'s own `[project]
-version` field (Python package metadata, unrelated) and from `versioning.instructions.md`'s
-`ver.libs`/`ver.workflows` checks (dependency locks and GitHub Action ref pins against external
-sources — a different concern entirely).
+version` field (Python package metadata, unrelated) and from `modules/versioning/libs.py` and
+`workflows.py`'s `ver.libs`/`ver.workflows` checks (dependency locks and GitHub Action ref pins
+against external sources — a different concern entirely, despite living in the same module
+directory as `project.py`).
 
 Scheme: `Major.Minor.Patch[-Build]`
 - No build suffix (e.g. `1.0.0`) — a released version, currently what's tagged and live on `main`.
 - A build suffix (e.g. `1.1.0-003`) — build `003` toward `1.1.0`, already deployed to the
   `development` Shopify theme, not yet released to `main`/production.
 
-Two operations, one per `version.*` invoke task:
-- `version.bump_build` — no build suffix yet -> bump the minor and start build `001`
+Two operations, one per `ver.project_bump_*` invoke task:
+- `ver.project_bump_build` — no build suffix yet -> bump the minor and start build `001`
   (`1.0.0` -> `1.1.0-001`); build suffix present -> increment the build number only
   (`1.1.0-001` -> `1.1.0-002`)
-- `version.bump_release` — drop the build suffix (`1.1.0-003` -> `1.1.0`)
+- `ver.project_bump_release` — drop the build suffix (`1.1.0-003` -> `1.1.0`)
 
-See `modules/version/README.md` for full behavior/data-flow details.
+See `modules/versioning/README.md` for full behavior/data-flow details.
 
 ## Usage
 ```sh
-uv run --no-sync invoke version.bump_build        # dev deploy: new minor's first build, or next build number
-uv run --no-sync invoke version.bump_release     # release: drop the build suffix
+uv run --no-sync invoke ver.project_bump_build        # dev deploy: new minor's first build, or next build number
+uv run --no-sync invoke ver.project_bump_release     # release: drop the build suffix
 ```
 Both only rewrite `VERSION` — they don't commit, branch, or push. `deploy.yml`/`release.yml`
 handle all git/PR plumbing themselves (same spirit as `promote.yml`/`upgrade.yml`'s inline `git`
@@ -35,13 +36,13 @@ steps), so the module stays a pure file operation, easy to reason about and lint
 git state.
 
 ## Relationship to Other Workflows
-- **`deploy.yml`** — its first job runs `version.bump_build`, then opens and immediately merges a
+- **`deploy.yml`** — its first job runs `ver.project_bump_build`, then opens and immediately merges a
   PR carrying the `VERSION` change into `development` (see "Why a PR, Not a Direct Push" below),
   but only when deploying to the **dev** theme (`(inputs.env || 'dev') == 'dev'`). It's skipped
   when `deploy.yml` is called with `env: prd` (from `release.yml`, after `promote.yml`) since
   `release.yml` already finalized `VERSION` for that release — bumping it again here would
   double-bump.
-- **`release.yml`** — its first job runs `version.bump_release` against `development`, then opens
+- **`release.yml`** — its first job runs `ver.project_bump_release` against `development`, then opens
   and merges the same kind of PR with the finalized version (no build suffix), then feeds that
   value through `promote.yml` (which merges the now-finalized `VERSION` into `main`), `deploy.yml`
   (`env: prd`), and the GitHub Release step, which tags `main` as `v<version>`. There's no manual
@@ -95,9 +96,9 @@ job of the *same* run — the triggering commit is already stale by the time `de
 workflow just wrote, not the pre-bump value from whatever originally triggered the run.
 
 ## Module Conventions
-- Same conventions as `modules.instructions.md` generally, except this module exposes
+- Same conventions as `modules.instructions.md` generally, except this file exposes
   `bump_build()`/`bump_release()` (public, no leading `_`) instead of a single `main()` — both are
-  equally valid entry points, one per `version.*` invoke task
+  equally valid entry points, one per `ver.project_bump_*` invoke task
 - Resolve the repo path via `modules.common.properties.get_repo_root()`, not `get_repo_local()`
   — these tasks run in CI, where `get_repo_local()`'s hardcoded local-machine path doesn't exist
 - `subprocess.run([...], cwd=repo_path)` never `shell=True`, output via `modules.common.utils`

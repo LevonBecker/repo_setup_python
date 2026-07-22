@@ -20,5 +20,5 @@ uv run --no-sync python -m modules.template.route "<arguments>"
 ```
 
 This is distinct from `/push` and `/pull` (see the `repo` skill), which push/pull this
-repo itself to/from its own GitHub origin and iCloud — `/template` instead exchanges shared
-generic tooling with the parent template repo configured in `properties.yml`.
+repo itself to/from its own GitHub origin — `/template` instead exchanges shared generic tooling
+with the parent template repo configured in `properties.yml`.

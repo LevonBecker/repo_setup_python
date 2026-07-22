@@ -1,13 +1,12 @@
-"""Push changes to git remote and iCloud Obsidian folder."""
+"""Push changes to git remote."""
 
-import shutil
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 
 from ..common import cli as click
-from ..common.properties import get_icloud_path, get_repo_local
+from ..common.properties import get_repo_local
 from ..common.utils import error, success, warning
 
 
@@ -221,54 +220,17 @@ def push_git(repo_path: Path, timestamp: str) -> None:
 
         # Push to remote
         click.echo("📤 Pushing to remote...")
-        try:
-            subprocess.run(["git", "push"], cwd=repo_path, check=True)
-            success("Push completed")
-        except subprocess.CalledProcessError:
-            warning("Git push failed, but continuing with iCloud push...")
+        subprocess.run(["git", "push"], cwd=repo_path, check=True)
+        success("Push completed")
     else:
         success("No local changes to commit")
-
-
-def push_icloud(repo_path: Path, icloud_path: Path) -> None:
-    """Push to iCloud Obsidian folder using rsync."""
-    click.echo()
-    click.echo("☁️  Pushing to iCloud Obsidian folder...")
-
-    rsync_cmd = [
-        "rsync",
-        "-avz",
-        "--delete",
-        "--exclude=.git",
-        "--exclude=.gitignore",
-        "--exclude=.gitattributes",
-        "--exclude=.DS_Store",
-        "--exclude=.claude",
-        "--exclude=.opencode",
-        "--exclude=.*",
-        f"{repo_path}/",
-        str(icloud_path),
-    ]
-
-    try:
-        subprocess.run(rsync_cmd, check=True, capture_output=True)
-
-        # Clean up any .git folder that might have appeared
-        git_in_icloud = icloud_path / ".git"
-        if git_in_icloud.exists():
-            click.echo("🧹 Removing .git folder from iCloud...")
-            shutil.rmtree(git_in_icloud)
-
-        success("iCloud push completed successfully")
-    except subprocess.CalledProcessError:
-        error("iCloud push failed", exit_code=1)
 
 
 @click.command()
 @click.option("--no-confirm", is_flag=True, help="Skip confirmation prompt")
 def main(no_confirm: bool) -> None:
     """
-    Push changes to git remote and iCloud Obsidian folder.
+    Push changes to git remote.
 
     Steps:
     1. Cleanup screenshots
@@ -277,10 +239,8 @@ def main(no_confirm: bool) -> None:
     4. Prompt user to confirm push
     5. Pull latest changes from git remote
     6. Commit and push any local changes to GitHub
-    7. Push to iCloud using rsync (excludes .git and hidden files)
     """
     repo_path = get_repo_local()
-    icloud_path = get_icloud_path()
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     click.echo("🔄 Starting repository push...")
@@ -294,18 +254,16 @@ def main(no_confirm: bool) -> None:
 
     # Prompt user to confirm push only in interactive terminals
     if not no_confirm and sys.stdin.isatty():
-        if not click.confirm("✅ Tests passed! Push to GitHub and iCloud?", default=True):
+        if not click.confirm("✅ Tests passed! Push to GitHub?", default=True):
             click.echo("Push cancelled by user.")
             raise SystemExit(0)
 
     click.echo()
     push_git(repo_path, timestamp)
-    push_icloud(repo_path, icloud_path)
 
     click.echo()
     click.echo("🎉 Repository push completed!")
     click.echo("   - Git: up to date")
-    click.echo("   - iCloud: pushed")
 
 
 if __name__ == "__main__":

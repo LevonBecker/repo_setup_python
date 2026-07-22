@@ -1,8 +1,8 @@
 """Push the current feature branch to origin (fix → test → commit → push), for use before opening a PR.
 
 This is intentionally separate from `modules.repo.push` (used by `/repo push` and `/push`), which
-also syncs to iCloud and assumes pushing the primary tracked branch. This module instead targets a
-feature branch that may not have upstream tracking yet, as used by `/punch-it-chewy`.
+assumes pushing the primary tracked branch. This module instead targets a feature branch that may
+not have upstream tracking yet, as used by `/punch-it-chewy`.
 """
 
 import subprocess

@@ -10,8 +10,9 @@ modules/
   common/       # cli, properties, utils helpers
   repo/         # pull, push, log, squash, rebase (git workflow)
   claude/       # sync .claude/commands/ from .github/prompts/
-  skeleton/     # locate the shared skeleton repo for /sync-setup
-  versioning/   # check pyproject.toml deps and workflow action refs vs. latest releases, update locks
+  template/     # sync shared, generic tooling with the parent template repo for /template
+  versioning/   # check pyproject.toml deps and workflow action refs vs. latest releases, update locks;
+                # bump the repo's VERSION file for deploys/releases
 ```
 
 ## Submodules
@@ -21,8 +22,8 @@ modules/
 | [`common/`](common/README.md) | CLI helpers, `properties.yml` config reader, output/utility helpers |
 | [`repo/`](repo/README.md) | Git workflow, session logging, squash, and rebase |
 | [`claude/`](claude/README.md) | Sync `.claude/commands/` from `.github/prompts/` source of truth |
-| [`skeleton/`](skeleton/README.md) | Locate the shared skeleton repo for `/sync-setup` |
-| [`versioning/`](versioning/README.md) | Check `pyproject.toml` deps and workflow action refs vs. latest releases, update locks |
+| [`template/`](template/README.md) | Sync shared, generic tooling with the parent template repo for `/template` |
+| [`versioning/`](versioning/README.md) | Check `pyproject.toml` deps and workflow action refs vs. latest releases, update locks; bump the repo's `VERSION` file for deploys/releases |
 
 ## Conventions
 

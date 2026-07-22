@@ -1,5 +1,5 @@
 ---
-description: Push changes to git remote and iCloud Obsidian folder
+description: Push changes to git remote
 subtask: false
 agent: general
 slash_command: /push

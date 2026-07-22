@@ -111,17 +111,6 @@ def get_template_remote() -> str:
     return props["template"]["remote"]
 
 
-def get_icloud_path() -> Path:
-    """
-    Get iCloud sync path as Path object.
-
-    Returns:
-        Path to iCloud sync location.
-    """
-    props = get_properties()
-    return _expand_path(props["icloud"]["path"])
-
-
 def get_screenshots_location() -> Path:
     """
     Get screenshots directory path as Path object.

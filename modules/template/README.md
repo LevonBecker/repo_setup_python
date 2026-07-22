@@ -29,6 +29,16 @@ uv run --no-sync python -m modules.template.route              # pull (default)
 uv run --no-sync python -m modules.template.route "push diff"  # push, phase 1
 ```
 
+`/template` (the prompt) drives the flow above directly. `tasks/template.py` also exposes thin
+invoke wrappers around the same functions, for manual use outside the prompt:
+
+```sh
+uv run --no-sync invoke template.pull
+uv run --no-sync invoke template.push_diff
+uv run --no-sync invoke template.push_apply --files=modules/foo.py,tasks/foo.py --deletes=modules/old.py
+uv run --no-sync invoke template.push_create_pr --branch=sync-from-repo-20260101-000000 --title="..." --body="..."
+```
+
 ## Pull
 
 Resolves `template.local` from `properties.yml`. If that path exists on disk, it's used directly —

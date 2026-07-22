@@ -1,5 +1,5 @@
 ---
-description: Pull updates from git remote and iCloud Obsidian folder
+description: Pull updates from git remote
 subtask: false
 agent: general
 slash_command: /pull
