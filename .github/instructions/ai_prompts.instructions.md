@@ -1,10 +1,10 @@
 ---
-applyTo: ".opencode/command/**,.claude/commands/**,.clinerules/workflows/**,.github/prompts/**"
+applyTo: ".claude/commands/**,.clinerules/workflows/**,.github/prompts/**"
 ---
 # AI Prompts Instructions
 
-Standards for the AI custom prompts / slash commands synced across all four tool directories
-(`.github/prompts/`, `.claude/commands/`, `.opencode/command/`, `.clinerules/workflows/`).
+Standards for the AI custom prompts / slash commands synced across all three tool directories
+(`.github/prompts/`, `.claude/commands/`, `.clinerules/workflows/`).
 
 ## Architecture
 
@@ -14,16 +14,6 @@ why prompts are the AI's decision-capture layer, and how this differs from
 `invoke.instructions.md`'s plain CLI automation.
 
 ## Required Frontmatter
-
-### OpenCode (.opencode/command/*.md)
-```yaml
----
-description: Brief description
-agent: general
-subtask: false  # CRITICAL — prevents Task tool recursion
-slash_command: /command_name
----
-```
 
 ### Claude Code (.claude/commands/*.md)
 ```yaml
@@ -49,7 +39,7 @@ the command name.
 
 ## Command Body
 
-OpenCode, Claude Code, and Copilot use the same inline-execution syntax:
+Claude Code and Copilot use the same inline-execution syntax:
 
 ```
 !`uv run --no-sync python -m modules.your_module.route "$ARGUMENTS"`
@@ -72,7 +62,7 @@ uv run --no-sync python -m modules.your_module.route "$ARGUMENTS"
 
 1. Create Python module: `modules/your_module/your_task.py` (ALL logic here)
 2. Create router: `modules/your_module/route.py` (argument dispatch)
-3. Create command files in all four tool dirs with the thin wrapper body
+3. Create command files in all three tool dirs with the thin wrapper body
 4. Run `uv run invoke fix && uv run invoke test` (must be 10/10 for .py changes)
 
 ## Cache Restart Requirement
@@ -92,8 +82,8 @@ All `uv run` calls in commands MUST use `--no-sync`:
 ```
 User: /chat resume wire_tunnels
   ↓
-AI tool reads command file (.opencode/command/chat.md, .claude/commands/chat.md,
-  .clinerules/workflows/chat.md, or .github/prompts/chat.prompt.md)
+AI tool reads command file (.claude/commands/chat.md, .clinerules/workflows/chat.md,
+  or .github/prompts/chat.prompt.md)
   ↓
 Command file executes: uv run --no-sync python -m modules.chat.route "resume wire_tunnels"
   ↓
@@ -142,9 +132,9 @@ if __name__ == "__main__":
     raise SystemExit(main())
 ```
 
-### Step 3: Create Command Files in All Four Tool Dirs
+### Step 3: Create Command Files in All Three Tool Dirs
 
-Create equivalent files in `.opencode/command/`, `.claude/commands/`, `.clinerules/workflows/`, and
+Create equivalent files in `.claude/commands/`, `.clinerules/workflows/`, and
 `.github/prompts/` using the appropriate frontmatter format (see above), with the same execution
 body (adjusted for Cline's non-`!` syntax, see Command Body above):
 

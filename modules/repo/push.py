@@ -8,6 +8,8 @@ from pathlib import Path
 from ..common import cli as click
 from ..common.properties import get_repo_local
 from ..common.utils import error, success, warning
+from .pr_diff import PROTECTED_BRANCHES
+from .pr_diff import current_branch as _current_branch
 
 
 def cleanup_screenshots(repo_path: Path) -> None:
@@ -122,14 +124,35 @@ def _stash_pop_with_lfs_recovery(repo_path: Path) -> None:
         error(f"Failed to restore stash after LFS fix:\n{retry_result.stderr}", exit_code=1)
 
 
-def _git_pull(repo_path: Path, stashed: bool) -> None:
-    """Pull from remote, falling back to rebase on diverging branches."""
+def _git_pull(repo_path: Path, stashed: bool, branch: str) -> bool:
+    """
+    Pull from remote, falling back to rebase on diverging branches.
+
+    Returns True if the branch has no upstream yet and isn't a protected branch — i.e. it's a
+    brand-new local feature branch for this change, so there's nothing to pull and the caller
+    should push it (with -u) unconditionally rather than only when there are new commits.
+    """
     pull_result = subprocess.run(["git", "pull"], cwd=repo_path, capture_output=True, text=True, check=False)
     if pull_result.returncode == 0:
         success("Pull completed")
-        return
+        return False
 
     combined = (pull_result.stdout + pull_result.stderr).lower()
+
+    if "no tracking information" in combined:
+        # Re-check the branch live (not a cached/remembered value) so a stale assumption about
+        # which branch is checked out never causes a protected branch to get auto-pushed.
+        if _current_branch(repo_path) in PROTECTED_BRANCHES:
+            if stashed:
+                click.echo("⚠️  Restoring stash before exiting...")
+                subprocess.run(["git", "stash", "pop"], cwd=repo_path, check=False)
+            error(
+                f"Protected branch '{branch}' has no upstream to pull from — resolve manually.",
+                exit_code=1,
+            )
+        warning(f"No upstream for '{branch}' yet — treating it as this change's feature branch, will push with -u.")
+        return True
+
     if "diverging" in combined or "fast-forward" in combined:
         warning("Diverging branches detected. Attempting git pull --rebase...")
         rebase_result = subprocess.run(
@@ -144,11 +167,12 @@ def _git_pull(repo_path: Path, stashed: bool) -> None:
                 exit_code=1,
             )
         success("Rebase successful. Continuing push.")
-    else:
-        if stashed:
-            click.echo("⚠️  Restoring stash before exiting...")
-            subprocess.run(["git", "stash", "pop"], cwd=repo_path, check=False)
-        error(f"Git pull failed. Stopping.\n{pull_result.stdout}\n{pull_result.stderr}", exit_code=1)
+        return False
+
+    if stashed:
+        click.echo("⚠️  Restoring stash before exiting...")
+        subprocess.run(["git", "stash", "pop"], cwd=repo_path, check=False)
+    error(f"Git pull failed. Stopping.\n{pull_result.stdout}\n{pull_result.stderr}", exit_code=1)
 
 
 def push_git(repo_path: Path, timestamp: str) -> None:
@@ -186,8 +210,9 @@ def push_git(repo_path: Path, timestamp: str) -> None:
 
     click.echo()
 
+    branch = _current_branch(repo_path)
     click.echo("📥 Pulling latest changes from remote...")
-    _git_pull(repo_path, stashed)
+    needs_upstream_push = _git_pull(repo_path, stashed, branch)
 
     # Restore stash if we stashed earlier
     if stashed:
@@ -217,13 +242,16 @@ def push_git(repo_path: Path, timestamp: str) -> None:
         # Commit with timestamp
         commit_message = f"Push repository: Automated commit {timestamp}"
         subprocess.run(["git", "commit", "-m", commit_message], cwd=repo_path, check=True)
-
-        # Push to remote
-        click.echo("📤 Pushing to remote...")
-        subprocess.run(["git", "push"], cwd=repo_path, check=True)
-        success("Push completed")
+        needs_upstream_push = True
     else:
         success("No local changes to commit")
+
+    if needs_upstream_push:
+        # -u is a no-op when the branch already tracks a remote, so it's always safe here — it
+        # only matters the first time a new feature branch is pushed.
+        click.echo("📤 Pushing to remote...")
+        subprocess.run(["git", "push", "-u", "origin", branch], cwd=repo_path, check=True)
+        success("Push completed")
 
 
 @click.command()
@@ -237,7 +265,8 @@ def main(no_confirm: bool) -> None:
     2. Auto-fix code style (ruff check --fix, ruff format)
     3. Run tests (MUST be 10/10 or push stops)
     4. Prompt user to confirm push
-    5. Pull latest changes from git remote
+    5. Pull latest changes from git remote — skipped for a non-protected branch with no
+       upstream yet (a new local feature branch), which pushes with -u instead
     6. Commit and push any local changes to GitHub
     """
     repo_path = get_repo_local()

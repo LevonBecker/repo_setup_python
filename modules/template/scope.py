@@ -11,7 +11,6 @@ INCLUDE_DIRS = [
     ".github/prompts",
     ".claude/commands",
     ".clinerules/workflows",
-    ".opencode/command",
     ".agents/skills",
 ]
 
@@ -58,7 +57,7 @@ BUSINESS_INSTRUCTION_FILES = {
 }
 
 # Filename stems tied to the fireball/product-metadata business commands -- excluded across
-# every command dir (.github/prompts, .claude/commands, .clinerules/workflows, .opencode/command).
+# every command dir (.github/prompts, .claude/commands, .clinerules/workflows).
 BUSINESS_COMMAND_STEMS = {
     "add_expense",
     "add_size_chart",

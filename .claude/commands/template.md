@@ -51,7 +51,7 @@ product-metadata content.
 
 **Scope** (enforced by `modules/template/scope.py`, mirrored here for visibility):
 - Eligible directories: `modules/`, `.github/instructions/`, `.github/prompts/`,
-  `.claude/commands/`, `.clinerules/workflows/`, `.opencode/command/`, `.agents/skills/`.
+  `.claude/commands/`, `.clinerules/workflows/`, `.agents/skills/`.
 - Always excluded everywhere: `topics/`, `screenshots/`, `properties.yml`, `active_topic.yml`,
   `uv.lock`, `README.md`, `LICENSE`, `pyproject.toml`, `.claude/settings.local.json`, `.git/`,
   `.venv/`, `__pycache__/`, `.ruff_cache/`, `logs/`, `tmp/`.

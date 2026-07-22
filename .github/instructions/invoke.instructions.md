@@ -85,11 +85,10 @@ All `uv run` calls MUST use `--no-sync`. See `.github/instructions/tests.instruc
 
 | Task | Command | Description |
 |------|---------|-------------|
-| sync all | `uv run --no-sync invoke ai.sync` | Sync all AI tools at once (runs all four below) |
+| sync all | `uv run --no-sync invoke ai.sync` | Sync all AI tools at once (runs all three below) |
 | claude | `uv run --no-sync invoke claude.sync` | Sync `.claude/commands/` |
 | cline | `uv run --no-sync invoke cline.sync` | Sync `.clinerules/workflows/` |
 | hermes | `uv run --no-sync invoke hermes.sync` | Sync `~/.hermes/` config + SKILL.md |
-| opencode | `uv run --no-sync invoke opencode.sync` | Sync `.opencode/command/` |
 
 ## Ollama Tasks
 
@@ -119,7 +118,6 @@ tasks/
 ├── debug.py         # debug utilities
 ├── hermes.py        # hermes.sync — syncs ~/.hermes/ config + SKILL.md
 ├── ollama.py        # ollama.install/list/update/uninstall/start/stop/status/restart/clean
-├── opencode.py      # opencode.sync — syncs .opencode/command/
 ├── ruff.py          # ruff.fix + ruff.format
 ├── setup.py         # setup.properties — creates/stamps properties.yml
 ├── tests.py         # actionlint, pylint, pytest, rufflint, yamllint

@@ -74,8 +74,7 @@ All providers ultimately read from here. Never duplicate rules into provider-spe
 | Priority | Provider | Config files read | How rules flow in |
 |----------|----------|-------------------|-------------------|
 | 1 (primary) | **GitHub Copilot** | `.github/copilot-instructions.md` + `.github/instructions/*.md` | `copilot-instructions.md` is always loaded and is a thin pointer; `.github/instructions/*.md` files with `applyTo` frontmatter additionally auto-apply natively when their glob matches |
-| 2 | **OpenCode** | `AGENTS.md` (repo root) | `AGENTS.md` is a thin pointer; all substance is in `.github/instructions/` |
-| 3 | **Claude TUI** | `CLAUDE.md` → `AGENTS.md` | `CLAUDE.md` delegates to `AGENTS.md`, which delegates to `.github/instructions/` |
+| 2 | **Claude TUI** | `CLAUDE.md` → `AGENTS.md` | `CLAUDE.md` delegates to `AGENTS.md`, which delegates to `.github/instructions/` |
 
 ### File Roles
 
@@ -83,7 +82,7 @@ All providers ultimately read from here. Never duplicate rules into provider-spe
 |------|------|----------|
 | `.github/instructions/*.md` | **Source of truth** — update here only | All rules, standards, workflow |
 | `.github/copilot-instructions.md` | Thin pointer for Copilot, always loaded | One-liner pointing to `index.instructions.md` |
-| `AGENTS.md` (root) | Thin pointer for OpenCode / other tools | Slash command quick-ref + links to instruction files |
+| `AGENTS.md` (root) | Thin pointer for other AI tools | Slash command quick-ref + links to instruction files |
 | `CLAUDE.md` (root) | Thin pointer for Claude TUI | One-liner pointing to `AGENTS.md` |
 | `topics/*/AGENTS.md` | Topic-scoped pointer | Topic context + link to root `AGENTS.md` |
 | `topics/*/CLAUDE.md` | Topic-scoped pointer for Claude | Points to topic `AGENTS.md` |
@@ -99,7 +98,6 @@ All providers ultimately read from here. Never duplicate rules into provider-spe
 
 Delete its entrypoint file(s) only. `.github/instructions/` and `AGENTS.md` stay untouched.
 
-- Remove OpenCode → delete `.opencode/` dir + `AGENTS.md` (if no other tool needs it)
 - Remove Claude → delete `CLAUDE.md` + `.claude/` dir
 
 ## Documentation

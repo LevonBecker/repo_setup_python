@@ -1,6 +1,6 @@
 # Claude Module
 
-Wrapper for the Claude Code CLI, allowing use of your Pro/Max subscription through OpenCode.
+Wrapper for the Claude Code CLI, allowing use of your Pro/Max subscription from other AI tools.
 
 ## Overview
 
@@ -79,7 +79,7 @@ uv run --no-sync python -m modules.claude.route [arguments...]
 ```
 User → /claude [args]
   ↓
-.opencode/command/claude.md
+.github/prompts/claude.prompt.md
   ↓
 modules/claude/route.py
   ↓

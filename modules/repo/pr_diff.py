@@ -9,7 +9,8 @@ from ..common import cli as click
 from ..common.properties import get_repo_local
 from ..common.utils import error
 
-_BASE_CANDIDATES = ("development", "develop", "main", "master")
+# Shared with push.py: branches treated as protected (never auto-pushed-to as a "feature branch").
+PROTECTED_BRANCHES = ("development", "develop", "main", "master")
 _DIFF_CHAR_LIMIT = 20_000
 
 
@@ -38,7 +39,7 @@ def _commits_ahead(repo_path: Path, base_ref: str) -> int:
 def detect_base_branch(repo_path: Path, branch: str) -> str:
     """Detect which base branch (development/main/etc.) the current branch forked from."""
     remotes = _remote_branches(repo_path)
-    candidates = [f"origin/{name}" for name in _BASE_CANDIDATES if f"origin/{name}" in remotes and name != branch]
+    candidates = [f"origin/{name}" for name in PROTECTED_BRANCHES if f"origin/{name}" in remotes and name != branch]
     if not candidates:
         error("No base branch found (looked for development, develop, main, master on origin).")
 
