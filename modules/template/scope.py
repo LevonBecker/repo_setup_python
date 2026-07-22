@@ -23,7 +23,6 @@ ALWAYS_EXCLUDE_ROOT_NAMES = {
     "uv.lock",
     "active_topic.yml",
     "topics",
-    "screenshots",
 }
 
 # Cache/build artifact names -- excluded wherever they occur in a path, not just at the root

@@ -12,21 +12,6 @@ from .pr_diff import PROTECTED_BRANCHES
 from .pr_diff import current_branch as _current_branch
 
 
-def cleanup_screenshots(repo_path: Path) -> None:
-    """Clean up screenshots before push."""
-    click.echo("🧹 Cleaning up screenshots before push...")
-    try:
-        subprocess.run(
-            ["uv", "run", "python", "-m", "modules.repo.cleanup", "--no-confirm"],
-            cwd=repo_path,
-            check=True,
-            capture_output=True,
-        )
-        success("Screenshot cleanup completed")
-    except subprocess.CalledProcessError:
-        warning("Screenshot cleanup failed, continuing with push...")
-
-
 def _tests_report_success(output: str) -> bool:
     return "Your code has been rated at 10.00/10" in output
 
@@ -90,8 +75,8 @@ def _resolve_conflicts(repo_path: Path, porcelain_output: str) -> None:
             subprocess.run(["git", "add", filepath], cwd=repo_path, check=False, capture_output=True)
 
 
-def _stash_pop_with_lfs_recovery(repo_path: Path) -> None:
-    """Pop the stash, recovering automatically from LFS pointer conflicts."""
+def _stash_pop(repo_path: Path) -> None:
+    """Pop the stash, erroring out if it fails (e.g. an unresolved conflict)."""
     pop_result = subprocess.run(
         ["git", "stash", "pop"],
         cwd=repo_path,
@@ -99,29 +84,8 @@ def _stash_pop_with_lfs_recovery(repo_path: Path) -> None:
         text=True,
         check=False,
     )
-    if pop_result.returncode == 0:
-        return
-
-    combined_pop = pop_result.stdout + pop_result.stderr
-    if "pointer" not in combined_pop.lower() and "lfs" not in combined_pop.lower():
-        error(f"Failed to restore stash:\n{combined_pop}", exit_code=1)
-
-    warning("LFS pointer conflict detected — resetting LFS files and retrying...")
-    subprocess.run(["git", "lfs", "checkout"], cwd=repo_path, capture_output=True, check=False)
-    for raw_line in combined_pop.splitlines():
-        stripped = raw_line.strip()
-        if stripped.startswith("screenshots/") or stripped.endswith(".png") or stripped.endswith(".jpg"):
-            subprocess.run(["git", "checkout", "HEAD", "--", stripped], cwd=repo_path, capture_output=True, check=False)
-
-    retry_result = subprocess.run(
-        ["git", "stash", "pop"],
-        cwd=repo_path,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if retry_result.returncode != 0:
-        error(f"Failed to restore stash after LFS fix:\n{retry_result.stderr}", exit_code=1)
+    if pop_result.returncode != 0:
+        error(f"Failed to restore stash:\n{pop_result.stdout}{pop_result.stderr}", exit_code=1)
 
 
 def _git_pull(repo_path: Path, stashed: bool, branch: str) -> bool:
@@ -193,9 +157,8 @@ def push_git(repo_path: Path, timestamp: str) -> None:
     stashed = False
     if status_result.stdout.strip():
         click.echo("📦 Stashing local changes before pull...")
-        # Exclude screenshots/latest.png (temp view file) to avoid LFS pointer issues
         stash_result = subprocess.run(
-            ["git", "stash", "push", "-u", "-m", "auto-stash before push", "--", ".", ":!screenshots/latest.png"],
+            ["git", "stash", "push", "-u", "-m", "auto-stash before push"],
             cwd=repo_path,
             capture_output=True,
             text=True,
@@ -218,7 +181,7 @@ def push_git(repo_path: Path, timestamp: str) -> None:
     if stashed:
         click.echo()
         click.echo("📂 Restoring stashed changes...")
-        _stash_pop_with_lfs_recovery(repo_path)
+        _stash_pop(repo_path)
         success("Stash restored")
 
     click.echo()
@@ -261,13 +224,12 @@ def main(no_confirm: bool) -> None:
     Push changes to git remote.
 
     Steps:
-    1. Cleanup screenshots
-    2. Auto-fix code style (ruff check --fix, ruff format)
-    3. Run tests (MUST be 10/10 or push stops)
-    4. Prompt user to confirm push
-    5. Pull latest changes from git remote — skipped for a non-protected branch with no
+    1. Auto-fix code style (ruff check --fix, ruff format)
+    2. Run tests (MUST be 10/10 or push stops)
+    3. Prompt user to confirm push
+    4. Pull latest changes from git remote — skipped for a non-protected branch with no
        upstream yet (a new local feature branch), which pushes with -u instead
-    6. Commit and push any local changes to GitHub
+    5. Commit and push any local changes to GitHub
     """
     repo_path = get_repo_local()
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -276,8 +238,6 @@ def main(no_confirm: bool) -> None:
     click.echo()
 
     # Run all steps
-    cleanup_screenshots(repo_path)
-    click.echo()
     run_tests(repo_path)
     click.echo()
 

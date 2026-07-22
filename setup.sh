@@ -28,7 +28,6 @@ install_tools_macos() {
 
 install_tools_linux() {
   install_uv_curl
-  echo "NOTE: macOS-only features (screenshot integration, /repo set_screenshots) won't work here."
   echo "NOTE: For Windows, use setup.ps1 in PowerShell instead of this script."
 }
 

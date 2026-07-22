@@ -37,7 +37,7 @@ tasks/
   combos.py             # Top-level aliases: fix, test
 .github/
   instructions/         # Copilot instructions per concern
-  prompts/              # /push, /pull, /squash, /rebase, /fix, /test, /setup, /pr-notes, /pr, /punch-it-chewy, /template, /versioning — source of truth
+  prompts/              # /push, /pull, /squash, /rebase, /fix, /test, /docs, /setup, /pr-notes, /pr, /punch-it-chewy, /template, /versioning — source of truth
   workflows/
     tests.yml            # Reusable CI: ruff + pylint + yamllint + actionlint
     feature_branches.yml # Runs tests.yml on pull_request
@@ -85,11 +85,12 @@ uv run --no-sync invoke uv.upgrade    # Install the versions currently locked in
 | `/squash` | `uv run --no-sync invoke repo.squash` | Anchored squash all commits to root |
 | `/rebase` | `uv run --no-sync invoke repo.rebase` | Rebase onto remote default branch |
 | `/fix` | `uv run --no-sync invoke fix` | Auto-fix Python linting issues |
-| `/test` | `uv run --no-sync invoke test` | Run all tests and linters |
+| `/test` | `uv run --no-sync invoke test` | Auto-fix, then run all tests and linters |
 | `/setup` | `./setup.sh` | Run initial project setup |
+| `/docs` | `uv run --no-sync invoke repo.pr_diff` | Audit docs and AI-config for drift against recent changes and fix anything stale |
 | `/pr-notes` | `uv run --no-sync invoke repo.pr_diff` | Draft PR notes vs. base branch; saves to `tmp/pull_requests/` when run standalone |
 | `/pr` | `uv run --no-sync invoke repo.pr_create` | Draft PR notes and open a Pull Request via `gh` (does not push) |
-| `/punch-it-chewy` | — | Push, then draft notes and open a Pull Request |
+| `/punch-it-chewy` | — | Test, audit docs, push, then draft notes and open a Pull Request |
 | `/template` | `uv run --no-sync python -m modules.template.route` | Pull shared tooling updates from the parent template repo into this project (or push new generic tooling upstream as a PR) |
 | `/versioning` | `uv run --no-sync invoke versioning.all` | Check pyproject.toml deps and workflow action refs vs. latest releases, update locks (does not install or run) |
 

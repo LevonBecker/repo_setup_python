@@ -31,7 +31,7 @@ tasks/
   combos.py       # Top-level aliases: fix, test, update
 .github/
   instructions/   # Copilot instruction files
-  prompts/        # Copilot prompt files (/push, /pull, /squash, /rebase, /fix, /test, /pr-notes, /pr, /punch-it-chewy, /template, /update, /upgrade, /repo, /claude, /setup) — source of truth for slash commands
+  prompts/        # Copilot prompt files (/push, /pull, /squash, /rebase, /fix, /test, /docs, /pr-notes, /pr, /punch-it-chewy, /template, /update, /upgrade, /repo, /claude, /setup) — source of truth for slash commands
   workflows/      # tests.yml (reusable), feature_branches.yml, protected_branches.yml
 .claude/
   commands/       # Claude Code slash commands, kept in sync with .github/prompts/ via `uv run --no-sync invoke claude.sync`

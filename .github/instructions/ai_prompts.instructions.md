@@ -176,14 +176,10 @@ AI tools cache command files at startup. After editing a command file you MUST r
 ```
 /repo push             → modules.repo.route → modules.repo.push
 /repo pull             → modules.repo.route → modules.repo.pull
-/repo cleanup          → modules.repo.route → modules.repo.cleanup
-/repo set_screenshots  → modules.repo.route → modules.repo.set_screenshots
-/repo view_screenshot  → modules.repo.route → modules.repo.view_screenshot
 /rebase                → invoke repo.rebase → modules.repo.rebase
 /squash                → invoke repo.squash → modules.repo.squash
 /push (alias)          → /repo push
 /pull (alias)          → /repo pull
-/ss (alias)            → /repo view_screenshot
 ```
 
 ### Topic

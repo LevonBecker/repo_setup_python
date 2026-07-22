@@ -111,50 +111,6 @@ def get_template_remote() -> str:
     return props["template"]["remote"]
 
 
-def get_screenshots_location() -> Path:
-    """
-    Get screenshots directory path as Path object.
-
-    Returns:
-        Path to screenshots directory.
-    """
-    props = get_properties()
-    return _expand_path(props["screenshots"]["location"])
-
-
-def get_screenshots_latest_file() -> str:
-    """
-    Get latest screenshot filename.
-
-    Returns:
-        Filename for latest screenshot.
-    """
-    props = get_properties()
-    return props["screenshots"]["latest_file"]
-
-
-def get_screenshots_preserve_files() -> list[str]:
-    """
-    Get list of screenshot files to preserve during cleanup.
-
-    Returns:
-        List of filenames to preserve.
-    """
-    props = get_properties()
-    return props["screenshots"]["preserve_files"]
-
-
-def get_screenshots_cleanup_patterns() -> list[str]:
-    """
-    Get list of file patterns to clean up.
-
-    Returns:
-        List of glob patterns for cleanup.
-    """
-    props = get_properties()
-    return props["screenshots"]["cleanup_patterns"]
-
-
 def get_expense_csv_path(year: int | None = None) -> Path:
     """
     Get expense CSV path.

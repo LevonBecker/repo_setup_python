@@ -19,8 +19,8 @@ Compare that template repo against this project and sync it in:
    `README.md`, `LICENSE`, `uv.lock`, `pyproject.toml`, `.claude/settings.local.json`, `.git/`,
    `.venv/`, `__pycache__/`, `.ruff_cache/`, any other cache/build artifact, anything under
    `logs/` or `tmp/`, and this project's own content directories (`topics/`, `agents/`, `docs/`,
-   `screenshots/`, `active_topic.yml`) — the template repo has no equivalent of these, but never
-   touch them regardless.
+   `active_topic.yml`) — the template repo has no equivalent of these, but never touch them
+   regardless.
 2. **Shared tooling — sync these by default** if present in the template repo: `modules/`,
    `tasks/`, `.github/instructions/`, `.github/prompts/`, `.github/workflows/`,
    `.claude/commands/`, `.vscode/`, `invoke.yml`, `setup.sh`, `CLAUDE.md`, `.editorconfig`,
@@ -51,7 +51,7 @@ product-metadata content.
 **Scope** (enforced by `modules/template/scope.py`, mirrored here for visibility):
 - Eligible directories: `modules/`, `.github/instructions/`, `.github/prompts/`,
   `.claude/commands/`, `.clinerules/workflows/`, `.agents/skills/`.
-- Always excluded everywhere: `topics/`, `screenshots/`, `properties.yml`, `active_topic.yml`,
+- Always excluded everywhere: `topics/`, `properties.yml`, `active_topic.yml`,
   `uv.lock`, `README.md`, `LICENSE`, `pyproject.toml`, `.claude/settings.local.json`, `.git/`,
   `.venv/`, `__pycache__/`, `.ruff_cache/`, `logs/`, `tmp/`.
 - Always excluded business content: `modules/fireball/`, `modules/financials/`,

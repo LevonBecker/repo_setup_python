@@ -1,5 +1,5 @@
 ---
-description: Repo operations (push, pull, cleanup, set_screenshots, view_screenshot)
+description: Repo operations (push, pull)
 subtask: false
 agent: general
 slash_command: /repo

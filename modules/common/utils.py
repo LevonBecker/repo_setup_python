@@ -29,16 +29,6 @@ def info(message: str) -> None:
     print(f"📂 {message}")
 
 
-def target(message: str) -> None:
-    """Print target message with emoji prefix."""
-    print(f"🎯 {message}")
-
-
-def camera(message: str) -> None:
-    """Print camera/screenshot message with emoji prefix."""
-    print(f"📸 {message}")
-
-
 def create_slug(text: str) -> str:
     """
     Convert text to a URL/filename-safe slug.
