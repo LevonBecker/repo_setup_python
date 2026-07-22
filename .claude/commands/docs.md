@@ -24,7 +24,7 @@ check:
 5. **The three synced command dirs** — `.github/prompts/*.prompt.md` (source of truth),
    `.claude/commands/*.md`, `.clinerules/workflows/*.md` — these must describe the same behavior;
    if one changed, the other two need the matching edit (see
-   `.github/instructions/ai_prompts.instructions.md`).
+   `.github/instructions/prompts.instructions.md`).
 6. **`properties.yml.example`** and any other example/config file describing setup — if `setup.sh`,
    `setup.ps1`, or `modules/setup/properties.py` changed what gets generated.
 7. Any other `*.md` file that references a file, command, module, or behavior touched by the diff.

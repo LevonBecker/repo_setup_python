@@ -39,9 +39,6 @@ HERMES_SKILL_FILE = HERMES_SKILL_DIR / "SKILL.md"
 # Commands that are exec-style but too long-running for the 30 s quick_commands timeout
 LONG_RUNNING: frozenset[str] = frozenset({"test", "upgrade"})
 
-# Commands to skip entirely — not useful as Hermes /r-* commands
-SKIP_COMMANDS: frozenset[str] = frozenset({"claude"})
-
 # Shell command overrides for specific prompts.
 # Key = prompt name (underscored), value = full shell command (use {repo_root} placeholder).
 EXEC_OVERRIDES: dict[str, str] = {
@@ -85,7 +82,7 @@ def load_commands() -> list[PromptCommand]:
     Attaches Hermes-specific `.r_name` and `.classification` onto each shared PromptCommand
     instance — these are Hermes routing concerns, not part of the shared parser's own API.
     """
-    cmds = _load_commands(skip=SKIP_COMMANDS)
+    cmds = _load_commands()
     for cmd in cmds:
         cmd.r_name = f"r-{cmd.slug}"
         cmd.classification = _classify(cmd)

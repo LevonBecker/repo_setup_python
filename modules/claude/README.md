@@ -1,94 +1,41 @@
 # Claude Module
 
-Wrapper for the Claude Code CLI, allowing use of your Pro/Max subscription from other AI tools.
+Generates `.claude/commands/*.md` from `.github/prompts/*.prompt.md`, the source of truth for
+all slash commands.
 
 ## Overview
 
-This module routes `/claude` commands directly to the Claude Code CLI (`claude`). Since Claude Code supports OAuth authentication with Pro/Max accounts, you can use your subscription directly without needing an API key.
-
-## Requirements
-
-- Claude Code CLI installed: `npm install -g @anthropic-ai/claude-code`
-- Claude Pro or Max subscription (for OAuth access)
+Claude Code reads slash commands from `.claude/commands/`, using only `description` frontmatter
+(the filename is the command name; extra fields are ignored). `sync.py` reads every prompt file
+via `modules/common/prompt_commands.py` and writes new command files — by default it never
+overwrites a file that already exists, so hand-crafted commands survive re-syncs.
 
 ## Usage
 
-### Slash Command
-
-```
-/claude [arguments...]
-```
-
-### CLI (Direct)
-
 ```bash
-uv run --no-sync python -m modules.claude.route [arguments...]
+uv run --no-sync python -m modules.claude.sync          # additive only
+uv run --no-sync python -m modules.claude.sync --force   # overwrite existing files too
+uv run --no-sync invoke claude.sync
+uv run --no-sync invoke claude.sync --force
 ```
 
-## Examples
+Re-run this sync after adding or modifying any `.github/prompts/*.prompt.md` file, then restart
+Claude Code to pick up new commands.
 
-### Check Version
+## Files
 
-```
-/claude --version
-```
-
-### Run a Prompt
-
-```
-/claude "Explain this function"
-```
-
-### Interactive Mode
-
-```
-/claude
-```
-
-### Specify Model
-
-```
-/claude --model opus "your prompt here"
-```
-
-### With Options
-
-```bash
-# Allow Claude to execute commands
-/claude --dangerously-skip-permissions "run npm test"
-
-# Use specific model
-/claude --model sonnet "refactor this code"
-
-# Resume a previous session
-/claude --resume "continue where we left off"
-```
-
-## Common Options
-
-| Option | Description |
-|--------|-------------|
-| `--model <model>` | Select model: opus, sonnet, haiku |
-| `--resume` | Resume a previous session |
-| `--dangerously-skip-permissions` | Skip permission prompts (use carefully) |
-| `--max-tokens <n>` | Maximum output tokens |
-| `--no-input` | Exit after completing request (non-interactive) |
+- `sync.py` — reads `.github/prompts/` via `modules/common/prompt_commands.py`, writes
+  `.claude/commands/*.md`
+- `README.md` — this file
 
 ## Architecture
 
 ```
-User → /claude [args]
+uv run --no-sync invoke claude.sync
   ↓
-.github/prompts/claude.prompt.md
+modules/claude/sync.py
   ↓
-modules/claude/route.py
+modules/common/prompt_commands.py (shared .prompt.md parser)
   ↓
-claude CLI (system PATH)
+.claude/commands/*.md
 ```
-
-## Notes
-
-- This passes all arguments directly to the `claude` CLI
-- Claude Code handles OAuth authentication automatically
-- Your Pro/Max subscription limits still apply
-- See `claude --help` for full CLI options

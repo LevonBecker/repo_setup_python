@@ -19,10 +19,6 @@ _REPO_ROOT = find_repo_root()
 _CLINE_WORKFLOWS_DIR = _REPO_ROOT / ".clinerules" / "workflows"
 _EXEC_RE = re.compile(r"^!`(.+)`$")
 
-# "claude.md" collides with Claude Code's own CLAUDE.md auto-loading convention
-# on case-insensitive filesystems (APFS) — skip it, same as hermes/sync.py does.
-_SKIP_COMMANDS: frozenset[str] = frozenset({"claude"})
-
 
 def _transform_body(body: str) -> str:
     """Convert Hermes exec lines to plain fenced code blocks Cline can run via its own tools."""
@@ -45,7 +41,7 @@ def _workflow_content(body: str) -> str:
 def main() -> None:
     """Sync .clinerules/workflows/ from .github/prompts/ source of truth."""
     _CLINE_WORKFLOWS_DIR.mkdir(parents=True, exist_ok=True)
-    cmds = load_commands(skip=_SKIP_COMMANDS)
+    cmds = load_commands()
     for cmd in cmds:
         out: Path = _CLINE_WORKFLOWS_DIR / f"{cmd.slug}.md"
         out.write_text(_workflow_content(_transform_body(cmd.body)), encoding="utf-8")

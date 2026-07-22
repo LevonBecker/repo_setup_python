@@ -27,7 +27,7 @@ description: "Use when reviewing a pull request or code change in this repo — 
   changes behavior without updating the relevant instruction file is incomplete, not just
   under-documented.
 - The three synced command dirs (`.github/prompts/`, `.claude/commands/`, `.clinerules/workflows/`)
-  must stay behaviorally identical — see `.github/instructions/ai_prompts.instructions.md`. Flag a
+  must stay behaviorally identical — see `.github/instructions/prompts.instructions.md`. Flag a
   PR that edits only one or two of the three.
 
 ## What NOT to Flag

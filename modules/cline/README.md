@@ -10,9 +10,6 @@ Cline has no native slash-command frontmatter format, no `applyTo`-style scoping
 prompt file, converts `!`...`` exec lines into "Run this terminal command:" + fenced code block,
 and writes the result to `.clinerules/workflows/`.
 
-`claude` is skipped: its filename collides with Claude Code's own `CLAUDE.md` auto-loading
-convention on case-insensitive filesystems (APFS).
-
 ## Usage
 
 ```bash

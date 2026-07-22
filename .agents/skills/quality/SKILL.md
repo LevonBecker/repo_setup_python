@@ -1,6 +1,6 @@
 ---
 name: quality
-description: Use for template_python quality workflows: run tests, fix lint failures, apply formatting, inspect logs, or use /test, /fix, /log, or /claude equivalents.
+description: Use for template_python quality workflows: run tests, fix lint failures, apply formatting, inspect logs, or use /test, /fix, or /log equivalents.
 ---
 
 # Quality Workflow
@@ -10,7 +10,6 @@ Use these `.github/prompts/` files as source of truth:
 - `.github/prompts/test.prompt.md`
 - `.github/prompts/fix.prompt.md`
 - `.github/prompts/log.prompt.md`
-- `.github/prompts/claude.prompt.md`
 
 When the user asks to test, fix, inspect logs, or use an equivalent workflow, read the matching prompt file and follow it.
 
