@@ -34,9 +34,9 @@ Compare that template repo against this project and sync it in:
      overwrite, keep the local version, or merge by hand. Do not overwrite silently.
 4. Apply only the changes the user approved (plus unambiguous additions/identical-skips), then
    summarize what was added, updated, and skipped.
-5. If `.github/prompts/` changed, remind the user to run `uv run --no-sync invoke claude.sync`
-   (add `--force` to overwrite hand-crafted `.claude/commands/` files) afterward — do not run it
-   automatically.
+5. If `.github/prompts/` changed, mirror the same changes into `.claude/commands/` and
+   `.clinerules/workflows/` by hand — see `.github/instructions/prompts.instructions.md` for the
+   required frontmatter/body per tool. There is no sync task; these dirs are hand-maintained.
 
 Never modify `pyproject.toml`, `properties.yml`, `README.md`, `LICENSE`, or `uv.lock` even if the
 template repo's versions differ from this project's — those are always project-specific and must

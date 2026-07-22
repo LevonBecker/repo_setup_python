@@ -9,7 +9,6 @@ no classes required except small helper validators in `common/cli.py`.
 modules/
   common/       # cli, properties, utils helpers
   repo/         # pull, push, log, squash, rebase (git workflow)
-  claude/       # sync .claude/commands/ from .github/prompts/
   template/     # sync shared, generic tooling with the parent template repo for /template
   versioning/   # check pyproject.toml deps and workflow action refs vs. latest releases, update locks;
                 # bump the repo's VERSION file for deploys/releases
@@ -21,7 +20,6 @@ modules/
 |-----------|---------|
 | [`common/`](common/README.md) | CLI helpers, `properties.yml` config reader, output/utility helpers |
 | [`repo/`](repo/README.md) | Git workflow, session logging, squash, and rebase |
-| [`claude/`](claude/README.md) | Sync `.claude/commands/` from `.github/prompts/` source of truth |
 | [`template/`](template/README.md) | Sync shared, generic tooling with the parent template repo for `/template` |
 | [`versioning/`](versioning/README.md) | Check `pyproject.toml` deps and workflow action refs vs. latest releases, update locks; bump the repo's `VERSION` file for deploys/releases |
 

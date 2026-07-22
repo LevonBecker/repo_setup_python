@@ -12,7 +12,6 @@ Modules provide reusable Python logic consumed by invoke tasks, prompts, and scr
 |------|---------|
 | `modules/common/` | Helpers tightly coupled to invoke tasks (`cli`, `properties`, `utils`) |
 | `modules/repo/` | Git/PR workflow logic (pull, push, log, squash, rebase, pr) |
-| `modules/claude/` | Syncs `.claude/commands/` from `.github/prompts/` source of truth |
 | `modules/template/` | Syncs shared, generic tooling with the parent template repo for `/template` |
 | `modules/versioning/` | Checks `pyproject.toml` deps and workflow action refs against latest releases, updates locks; bumps the repo's `VERSION` file for deploys/releases (`project.py`) |
 

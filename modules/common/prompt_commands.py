@@ -1,6 +1,6 @@
 """
 Parse `.github/prompts/*.prompt.md` — the source of truth for all slash commands — into a
-structured command list shared by every AI-tool sync script (hermes, claude, cline).
+structured command list used by modules/hermes/sync.py.
 """
 
 from __future__ import annotations
