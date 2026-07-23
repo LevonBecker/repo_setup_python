@@ -75,6 +75,27 @@ def parse_dependency(dep_string: str) -> dict | None:
     }
 
 
+def get_declared_dependency_names(toml_doc) -> set[str]:
+    """Return lowercase names of every dependency declared in [project.dependencies] and
+    [project.optional-dependencies]."""
+    names: set[str] = set()
+
+    if "project" in toml_doc and "dependencies" in toml_doc["project"]:
+        for dep_string in toml_doc["project"]["dependencies"]:
+            parsed = parse_dependency(dep_string)
+            if parsed:
+                names.add(parsed["name"].lower())
+
+    if "project" in toml_doc and "optional-dependencies" in toml_doc["project"]:
+        for deps_list in toml_doc["project"]["optional-dependencies"].values():
+            for dep_string in deps_list:
+                parsed = parse_dependency(dep_string)
+                if parsed:
+                    names.add(parsed["name"].lower())
+
+    return names
+
+
 def find_updates(toml_doc, outdated_packages: list[dict], installed_packages: list[dict]) -> list[dict]:
     """Find dependencies needing updates in both dependencies and optional-dependencies.
 

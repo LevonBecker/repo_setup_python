@@ -1,6 +1,6 @@
 """
 Parse `.github/prompts/*.prompt.md` — the source of truth for all slash commands — into a
-structured command list shared by every AI-tool sync script (hermes, claude, cline, opencode).
+structured command list used by modules/hermes/sync.py.
 """
 
 from __future__ import annotations
@@ -52,20 +52,13 @@ class PromptCommand:  # pylint: disable=too-many-instance-attributes,too-few-pub
             self.exec_line = exec_match.group(1).strip()
 
 
-def load_commands(*, skip: frozenset[str] = frozenset()) -> list[PromptCommand]:
-    """
-    Load and parse all .github/prompts/*.prompt.md files, deduplicating by name.
-
-    Args:
-        skip: Command names to exclude entirely (each caller passes its own reasoning-specific set).
-    """
+def load_commands() -> list[PromptCommand]:
+    """Load and parse all .github/prompts/*.prompt.md files, deduplicating by name."""
     files = sorted(PROMPTS_DIR.glob("*.prompt.md"))
     seen: set[str] = set()
     unique: list[PromptCommand] = []
     for path in files:
         cmd = PromptCommand(path)
-        if cmd.name in skip:
-            continue
         if cmd.name in seen:
             # Warn only if descriptions differ — could indicate accidental divergence
             existing = next(c for c in unique if c.name == cmd.name)

@@ -22,12 +22,10 @@ properties.yml         # Project configuration (repo path/remote, template path/
 modules/
   common/               # cli.py, properties.py, utils.py — shared helpers
   repo/                 # pull.py, push.py, log.py, squash.py, rebase.py, pr.py — git/PR workflow modules
-  claude/               # sync.py — syncs .claude/commands/ from .github/prompts/
   template/             # pull.py, push.py, resolve.py, route.py, scope.py — sync shared tooling with the parent template repo for /template
   versioning/           # libs.py, python.py, workflows.py, upgrade.py, project.py — check pyproject.toml deps & workflow action refs vs. latest releases, bump the repo's VERSION file
 tasks/
-  __init__.py           # Wires the invoke Collection (claude, repo, ruff, template, tests, uv, versioning, fix, test)
-  claude.py             # claude.sync
+  __init__.py           # Wires the invoke Collection (repo, ruff, template, tests, uv, versioning, fix, test)
   repo.py               # repo.pull, repo.push, repo.log, repo.squash, repo.rebase, repo.pr_diff, repo.pr_notes_save, repo.pr_create
   ruff.py               # ruff.fix, ruff.format
   template.py           # template.pull
@@ -37,13 +35,13 @@ tasks/
   combos.py             # Top-level aliases: fix, test
 .github/
   instructions/         # Copilot instructions per concern
-  prompts/              # /push, /pull, /squash, /rebase, /fix, /test, /setup, /pr-notes, /pr, /punch-it-chewy, /template, /versioning — source of truth
+  prompts/              # /push, /pull, /squash, /rebase, /fix, /test, /docs, /setup, /pr-notes, /pr, /punch-it-chewy, /template, /versioning — source of truth
   workflows/
     tests.yml            # Reusable CI: ruff + pylint + yamllint + actionlint
     feature_branches.yml # Runs tests.yml on pull_request
     protected_branches.yml # Runs tests.yml on push to main
 .claude/
-  commands/              # Claude Code slash commands, mirrored from .github/prompts/
+  commands/              # Claude Code slash commands, hand-maintained mirror of .github/prompts/
 .vscode/
   extensions.json       # Recommended VS Code extensions
   settings.json         # Ruff formatter + Python interpreter settings
@@ -64,7 +62,6 @@ uv run --no-sync invoke repo.rebase  # Rebase onto remote default branch (option
 uv run --no-sync invoke repo.pr_diff       # Print current branch's commit log/diff vs. its base branch
 uv run --no-sync invoke repo.pr_notes_save # Save PR notes to tmp/pull_requests/ (--content=...)
 uv run --no-sync invoke repo.pr_create     # Open a GitHub PR via gh (--title=... --content=...)
-uv run --no-sync invoke claude.sync  # Sync .claude/commands/ from .github/prompts/ (additive; --force to overwrite)
 uv run --no-sync invoke template.pull            # Resolve the parent template repo's local path for /template
 uv run --no-sync invoke template.push_diff       # Diff this repo's scoped tooling against the parent template repo
 uv run --no-sync invoke template.push_apply      # Copy approved files/deletions to a new branch upstream and push it
@@ -85,11 +82,12 @@ uv run --no-sync invoke uv.upgrade    # Install the versions currently locked in
 | `/squash` | `uv run --no-sync invoke repo.squash` | Anchored squash all commits to root |
 | `/rebase` | `uv run --no-sync invoke repo.rebase` | Rebase onto remote default branch |
 | `/fix` | `uv run --no-sync invoke fix` | Auto-fix Python linting issues |
-| `/test` | `uv run --no-sync invoke test` | Run all tests and linters |
+| `/test` | `uv run --no-sync invoke fix && uv run --no-sync invoke test` | Auto-fix, then run all tests and linters |
 | `/setup` | `./setup.sh` | Run initial project setup |
+| `/docs` | `uv run --no-sync invoke repo.pr_diff` | Audit docs and AI-config for drift against recent changes and fix anything stale |
 | `/pr-notes` | `uv run --no-sync invoke repo.pr_diff` | Draft PR notes vs. base branch; saves to `tmp/pull_requests/` when run standalone |
 | `/pr` | `uv run --no-sync invoke repo.pr_create` | Draft PR notes and open a Pull Request via `gh` (does not push) |
-| `/punch-it-chewy` | — | Push, then draft notes and open a Pull Request |
+| `/punch-it-chewy` | — | Test, audit docs, push, then draft notes and open a Pull Request |
 | `/template` | `uv run --no-sync python -m modules.template.route` | Pull shared tooling updates from the parent template repo into this project (or push new generic tooling upstream as a PR) |
 | `/versioning` | `uv run --no-sync invoke versioning.all` | Check pyproject.toml deps and workflow action refs vs. latest releases, update locks (does not install or run) |
 
@@ -98,7 +96,6 @@ uv run --no-sync invoke uv.upgrade    # Install the versions currently locked in
 |--------|---------|
 | [`modules/common/`](modules/common/README.md) | CLI helpers, `properties.yml` config reader, output/utility helpers |
 | [`modules/repo/`](modules/repo/README.md) | Git workflow and session logging |
-| [`modules/claude/`](modules/claude/README.md) | Sync `.claude/commands/` from `.github/prompts/` source of truth |
 | [`modules/template/`](modules/template/README.md) | Sync shared, generic tooling with the parent template repo for `/template` |
 | [`modules/versioning/`](modules/versioning/README.md) | Check `pyproject.toml` deps and workflow action refs vs. latest releases, update locks; bump the repo's `VERSION` file for deploys/releases |
 

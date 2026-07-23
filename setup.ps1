@@ -10,7 +10,6 @@ function Install-Tools {
     } else {
         irm https://astral.sh/uv/install.ps1 | iex
     }
-    Write-Host "NOTE: macOS-only features (screenshot integration, /repo set_screenshots) won't work here."
 }
 
 function Setup-PythonEnv {

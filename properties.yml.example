@@ -1,0 +1,14 @@
+---
+# Repository Properties
+# Central configuration for all scripts and automation.
+# Created by /setup or ./setup.sh or ./setup.ps1
+
+# This Repository's Local and Remote Paths
+repo:
+  local: "$HOME/path/to/this/repo"
+  remote: "github.com/<your-username>/<your-repo-name>"
+
+# Repository Template Parent Repository
+template:
+  local: "$HOME/path/to/your/template/repo"
+  remote: "github.com/<your-username>/<your-template-repo>"

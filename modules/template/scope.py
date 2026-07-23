@@ -11,7 +11,6 @@ INCLUDE_DIRS = [
     ".github/prompts",
     ".claude/commands",
     ".clinerules/workflows",
-    ".opencode/command",
     ".agents/skills",
 ]
 
@@ -24,7 +23,6 @@ ALWAYS_EXCLUDE_ROOT_NAMES = {
     "uv.lock",
     "active_topic.yml",
     "topics",
-    "screenshots",
 }
 
 # Cache/build artifact names -- excluded wherever they occur in a path, not just at the root
@@ -58,7 +56,7 @@ BUSINESS_INSTRUCTION_FILES = {
 }
 
 # Filename stems tied to the fireball/product-metadata business commands -- excluded across
-# every command dir (.github/prompts, .claude/commands, .clinerules/workflows, .opencode/command).
+# every command dir (.github/prompts, .claude/commands, .clinerules/workflows).
 BUSINESS_COMMAND_STEMS = {
     "add_expense",
     "add_size_chart",

@@ -11,8 +11,6 @@ Hermes has no native prompt-file format at all — it's driven entirely by `~/.h
 `ai_guided`) based on its own Hermes-specific rules (e.g. which commands are too long-running for
 the 30s `quick_commands` timeout), and writes both output files.
 
-`claude` is skipped — not useful as a Hermes `/r-*` command.
-
 ## Usage
 
 ```bash

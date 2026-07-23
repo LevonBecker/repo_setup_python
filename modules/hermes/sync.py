@@ -25,7 +25,6 @@ import yaml
 
 from modules.common.prompt_commands import PROMPTS_DIR, PromptCommand
 from modules.common.prompt_commands import load_commands as _load_commands
-from modules.common.properties import get_screenshots_latest_file, get_screenshots_location
 from modules.common.route_utils import find_repo_root
 
 # ---------------------------------------------------------------------------
@@ -39,9 +38,6 @@ HERMES_SKILL_FILE = HERMES_SKILL_DIR / "SKILL.md"
 
 # Commands that are exec-style but too long-running for the 30 s quick_commands timeout
 LONG_RUNNING: frozenset[str] = frozenset({"test", "upgrade"})
-
-# Commands to skip entirely — not useful as Hermes /r-* commands
-SKIP_COMMANDS: frozenset[str] = frozenset({"claude"})
 
 # Shell command overrides for specific prompts.
 # Key = prompt name (underscored), value = full shell command (use {repo_root} placeholder).
@@ -86,7 +82,7 @@ def load_commands() -> list[PromptCommand]:
     Attaches Hermes-specific `.r_name` and `.classification` onto each shared PromptCommand
     instance — these are Hermes routing concerns, not part of the shared parser's own API.
     """
-    cmds = _load_commands(skip=SKIP_COMMANDS)
+    cmds = _load_commands()
     for cmd in cmds:
         cmd.r_name = f"r-{cmd.slug}"
         cmd.classification = _classify(cmd)
@@ -241,27 +237,6 @@ def _build_ai_guided_section(cmds: list[PromptCommand]) -> str:
     return "".join(parts)
 
 
-def _build_ss_note() -> str:
-    """Special note for the /r-ss two-step vision workflow."""
-    latest_screenshot = get_screenshots_location() / get_screenshots_latest_file()
-    return (
-        "## `/r-ss` — Screenshot Workflow (Two Steps)\n\n"
-        "`/r-ss` is a `quick_command` that copies the latest screenshot to\n"
-        "`screenshots/latest.png` and prints the path.\n\n"
-        "After it runs, Hermes MUST also display the image:\n\n"
-        "```python\n"
-        "vision_analyze(\n"
-        f'    image_url="{latest_screenshot}",\n'
-        '    question="What does this screenshot show?"\n'
-        ")\n"
-        "```\n\n"
-        "Full flow:\n"
-        "1. `/r-ss` quick_command runs → copies screenshot, prints confirmation\n"
-        "2. Hermes calls `vision_analyze` on `screenshots/latest.png`\n"
-        "3. Hermes describes what it sees and asks how to help\n\n"
-    )
-
-
 def _build_footer() -> str:
     return (
         "---\n\n"
@@ -276,7 +251,6 @@ def generate_skill_md(cmds: list[PromptCommand]) -> str:
     return "".join(
         [
             _SKILL_HEADER_TEMPLATE.format(repo_root=repo),
-            _build_ss_note(),
             _build_exec_section(cmds),
             _build_exec_long_section(cmds),
             _build_arg_section(cmds, repo),

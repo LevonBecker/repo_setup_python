@@ -20,9 +20,6 @@ def _run(module: str, args: list[str]) -> int:
 _SUBCOMMAND_MODULES = {
     "push": "modules.repo.push",
     "pull": "modules.repo.pull",
-    "cleanup": "modules.repo.cleanup",
-    "set_screenshots": "modules.repo.set_screenshots",
-    "view_screenshot": "modules.repo.view_screenshot",
     "pr_diff": "modules.repo.pr_diff",
     "pr_notes": "modules.repo.pr_notes",
     "pr_create": "modules.repo.pr_create",

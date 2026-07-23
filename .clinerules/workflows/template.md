@@ -19,8 +19,8 @@ Compare that template repo against this project and sync it in:
    `README.md`, `LICENSE`, `uv.lock`, `pyproject.toml`, `.claude/settings.local.json`, `.git/`,
    `.venv/`, `__pycache__/`, `.ruff_cache/`, any other cache/build artifact, anything under
    `logs/` or `tmp/`, and this project's own content directories (`topics/`, `agents/`, `docs/`,
-   `screenshots/`, `active_topic.yml`) — the template repo has no equivalent of these, but never
-   touch them regardless.
+   `active_topic.yml`) — the template repo has no equivalent of these, but never touch them
+   regardless.
 2. **Shared tooling — sync these by default** if present in the template repo: `modules/`,
    `tasks/`, `.github/instructions/`, `.github/prompts/`, `.github/workflows/`,
    `.claude/commands/`, `.vscode/`, `invoke.yml`, `setup.sh`, `CLAUDE.md`, `.editorconfig`,
@@ -32,14 +32,11 @@ Compare that template repo against this project and sync it in:
    - Identical to what's already here → skip silently.
    - Different from what's already here → show a short diff and ask the user whether to
      overwrite, keep the local version, or merge by hand. Do not overwrite silently.
-   - Note: this project also maintains `.opencode/command/`, generated from `.github/prompts/`
-     via `uv run --no-sync invoke opencode.sync` — never delete or skip-sync it based on the
-     template repo's absence; regenerate it per step 5 instead.
 4. Apply only the changes the user approved (plus unambiguous additions/identical-skips), then
    summarize what was added, updated, and skipped.
-5. If `.github/prompts/` changed, remind the user to run `uv run --no-sync invoke claude.sync`
-   and `uv run --no-sync invoke opencode.sync` (add `--force` to overwrite hand-crafted
-   `.claude/commands/` or `.opencode/command/` files) afterward — do not run them automatically.
+5. If `.github/prompts/` changed, mirror the same changes into `.claude/commands/` and
+   `.clinerules/workflows/` by hand — see `.github/instructions/prompts.instructions.md` for the
+   required frontmatter/body per tool. There is no sync task; these dirs are hand-maintained.
 
 Never modify `pyproject.toml`, `properties.yml`, `README.md`, `LICENSE`, or `uv.lock` even if the
 template repo's versions differ from this project's — those are always project-specific and must
@@ -53,8 +50,8 @@ product-metadata content.
 
 **Scope** (enforced by `modules/template/scope.py`, mirrored here for visibility):
 - Eligible directories: `modules/`, `.github/instructions/`, `.github/prompts/`,
-  `.claude/commands/`, `.clinerules/workflows/`, `.opencode/command/`, `.agents/skills/`.
-- Always excluded everywhere: `topics/`, `screenshots/`, `properties.yml`, `active_topic.yml`,
+  `.claude/commands/`, `.clinerules/workflows/`, `.agents/skills/`.
+- Always excluded everywhere: `topics/`, `properties.yml`, `active_topic.yml`,
   `uv.lock`, `README.md`, `LICENSE`, `pyproject.toml`, `.claude/settings.local.json`, `.git/`,
   `.venv/`, `__pycache__/`, `.ruff_cache/`, `logs/`, `tmp/`.
 - Always excluded business content: `modules/fireball/`, `modules/financials/`,
