@@ -82,7 +82,7 @@ uv run --no-sync invoke uv.upgrade    # Install the versions currently locked in
 | `/squash` | `uv run --no-sync invoke repo.squash` | Anchored squash all commits to root |
 | `/rebase` | `uv run --no-sync invoke repo.rebase` | Rebase onto remote default branch |
 | `/fix` | `uv run --no-sync invoke fix` | Auto-fix Python linting issues |
-| `/test` | `uv run --no-sync invoke test` | Auto-fix, then run all tests and linters |
+| `/test` | `uv run --no-sync invoke fix && uv run --no-sync invoke test` | Auto-fix, then run all tests and linters |
 | `/setup` | `./setup.sh` | Run initial project setup |
 | `/docs` | `uv run --no-sync invoke repo.pr_diff` | Audit docs and AI-config for drift against recent changes and fix anything stale |
 | `/pr-notes` | `uv run --no-sync invoke repo.pr_diff` | Draft PR notes vs. base branch; saves to `tmp/pull_requests/` when run standalone |

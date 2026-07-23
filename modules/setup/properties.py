@@ -28,7 +28,7 @@ _PROPERTIES_FILE = _REPO_ROOT / "properties.yml"
 _TEMPLATE = """---
 # Repository Properties
 # Central configuration for all scripts and automation.
-# Created by /setup or ./setup.sh-ps1
+# Created by /setup or ./setup.sh or ./setup.ps1
 
 # This Repository's Local and Remote Paths
 repo:
