@@ -88,6 +88,18 @@ def _stash_pop(repo_path: Path) -> None:
         error(f"Failed to restore stash:\n{pop_result.stdout}{pop_result.stderr}", exit_code=1)
 
 
+def _has_commits_to_push(repo_path: Path) -> bool:
+    """Return whether HEAD is ahead of its upstream tracking branch."""
+    result = subprocess.run(
+        ["git", "rev-list", "--count", "@{u}..HEAD"],
+        cwd=repo_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.returncode == 0 and result.stdout.strip() != "0"
+
+
 def _git_pull(repo_path: Path, stashed: bool, branch: str) -> bool:
     """
     Pull from remote, falling back to rebase on diverging branches.
@@ -208,6 +220,7 @@ def push_git(repo_path: Path, timestamp: str) -> None:
         needs_upstream_push = True
     else:
         success("No local changes to commit")
+        needs_upstream_push = needs_upstream_push or _has_commits_to_push(repo_path)
 
     if needs_upstream_push:
         # -u is a no-op when the branch already tracks a remote, so it's always safe here — it
